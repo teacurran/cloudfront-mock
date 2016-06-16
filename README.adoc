@@ -1,0 +1,7 @@
+# cloudfront-mock
+
+image:http://jenkins.approachingpi.com/job/teacurran-cloudfront-mock.master.ci/badge/icon[build status (jenkins), link="http://jenkins.approachingpi.com/job/teacurran-cloudfront-mock.master.ci/"]
+image:https://img.shields.io/badge/license-MIT-blue.svg[License Badge, link="https://opensource.org/licenses/MIT"]
+
+
+Mock server for cloudfront signed url testing or local hosting
