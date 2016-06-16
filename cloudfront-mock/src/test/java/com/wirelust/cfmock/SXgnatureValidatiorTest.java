@@ -33,7 +33,7 @@ import static org.powermock.api.mockito.PowerMockito.mock;
  *
  * @author T. Curran
  */
-public class SignatureValidatiorTest {
+public class SXgnatureValidatiorTest {
 
 	private static final long EXPIRES_IN = 3600000;
 
