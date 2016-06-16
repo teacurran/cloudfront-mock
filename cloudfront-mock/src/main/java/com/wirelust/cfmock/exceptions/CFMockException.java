@@ -1,7 +1,5 @@
 package com.wirelust.cfmock.exceptions;
 
-import com.amazonaws.services.devicefarm.model.Run;
-
 /**
  * Date: 16-Jun-2016
  *
