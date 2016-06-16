@@ -17,6 +17,14 @@
 
 	<dependencies>
 
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk</artifactId>
+			<version>${version.aws}</version>
+			<scope>compile</scope>
+		</dependency>
+
+
 		<!-- Provided -->
 		<dependency>
 			<groupId>org.jboss.spec.javax.servlet</groupId>

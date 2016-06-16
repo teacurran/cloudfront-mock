@@ -27,6 +27,7 @@
 		<version.arquillian>1.1.11.Final</version.arquillian>
 		<version.arquillian.jacoco>1.0.0.Alpha8</version.arquillian.jacoco>
 		<version.arquillian.suite>1.1.2</version.arquillian.suite>
+		<version.aws>1.11.8</version.aws>
 		<version.deltaspike>1.4.1</version.deltaspike>
 		<version.ee>1.0.2.Final</version.ee>
 		<version.findbugs>3.0.0</version.findbugs>
