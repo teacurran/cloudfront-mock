@@ -22,6 +22,12 @@ public class SignatureValidator {
 		// static only class
 	}
 
+	/**
+	 * validate a signed URL
+	 * @param keyFile the key used to sign the url
+	 * @param resource the full signed URL
+	 * @return true if signature is valid and not expired
+	 */
 	public static boolean validateSignedUrl(File keyFile, String resource) {
 		URL url;
 

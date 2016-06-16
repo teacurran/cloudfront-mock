@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -13,20 +12,12 @@ import java.util.Map;
 
 import com.amazonaws.services.cloudfront.CloudFrontUrlSigner;
 import com.amazonaws.services.cloudfront.util.SignerUtils;
-import com.amazonaws.services.dynamodbv2.xspec.B;
 import com.wirelust.cfmock.exceptions.CFMockException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.junit.Assert.*;
 
 /**
  * Date: 16-Jun-2016
@@ -39,6 +30,7 @@ public class SignatureValidatiorTest {
 
 	URL pemUrl;
 	File keyFile;
+	String keyPairId = "test-keypair";
 
 	@Before
 	public void init() throws Exception {
@@ -51,8 +43,6 @@ public class SignatureValidatiorTest {
 	@Test
 	public void shouldBeAbleToValidateSignedURL() throws Exception {
 		String distributionDomain = "localhost";
-
-		String keyPairId = "test-keypair";
 
 		String s3Path = "test/url.html";
 
@@ -67,8 +57,6 @@ public class SignatureValidatiorTest {
 	@Test
 	public void shouldNotBeAbleToSignWithBadPemKey() throws Exception {
 		String distributionDomain = "localhost";
-
-		String keyPairId = "test-keypair";
 
 		String s3Path = "test/url.html";
 
