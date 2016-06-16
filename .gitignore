@@ -1,12 +1,45 @@
 *.class
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
 # Package Files #
 *.jar
 *.war
 *.ear
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+#source control files
+*.svn
+
+# Mac OSX
+.DS_Store
+
+# Windows
+Thumbs.db
+thumbs.db
+
+# IDEs
+.idea
+*.iml
+nbproject
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+atlassian-ide-plugin.xml
+*.swp
+*.out
+target/
+.setting/
+.settings/
+.project/
+*/.project
+.project
+.classpath
+projectFilesBackup/*
+*/.pydevproject
+.metadata/
+
+dist
+.tmp
+.sass-cache
+
