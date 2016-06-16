@@ -18,6 +18,9 @@ import com.wirelust.cfmock.exceptions.CFMockException;
 
 public class SignatureValidator {
 
+	private SignatureValidator() {
+		// static only class
+	}
 
 	public static boolean validateSignedUrl(File keyFile, String resource) {
 		URL url;
@@ -28,12 +31,7 @@ public class SignatureValidator {
 			throw new CFMockException(e);
 		}
 
-		Map<String, String> queryParams;
-		try {
-			queryParams = splitQuery(url);
-		} catch (UnsupportedEncodingException e) {
-			throw new CFMockException(e);
-		}
+		Map<String, String> queryParams = splitQuery(url.getQuery());
 
 		Date expires = new Date(Long.parseLong(queryParams.get("Expires"))*1000);
 
@@ -49,30 +47,33 @@ public class SignatureValidator {
 
 		String keyPairId = queryParams.get("Key-Pair-Id");
 
+		String signedUrl;
 		try {
-			String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(
+			signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(
 						SignerUtils.Protocol.https, url.getHost(), keyFile,
 						path, keyPairId, expires);
-
-			if (signedUrl.equals(resource)) {
-				return true;
-			}
 		} catch (InvalidKeySpecException | IOException e) {
 			throw new CFMockException(e);
 		}
 
-
-		return false;
+		return resource.equals(signedUrl);
 	}
 
-	public static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
-		Map<String, String> queryPairs = new LinkedHashMap<String, String>();
-		String query = url.getQuery();
+	public static Map<String, String> splitQuery(final String query) {
+		return splitQuery(query, Constants.DEFAULT_ENCODING);
+	}
+
+	public static Map<String, String> splitQuery(final String query, final String encoding) {
+		Map<String, String> queryPairs = new LinkedHashMap<>();
 		String[] pairs = query.split("&");
 		for (String pair : pairs) {
 			int idx = pair.indexOf('=');
-			queryPairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"),
-				URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+			try {
+				queryPairs.put(URLDecoder.decode(pair.substring(0, idx), encoding),
+					URLDecoder.decode(pair.substring(idx + 1), encoding));
+			} catch (UnsupportedEncodingException e) {
+				throw new CFMockException(e);
+			}
 		}
 		return queryPairs;
 	}

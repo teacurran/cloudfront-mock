@@ -39,6 +39,7 @@
 		<version.jacoco>0.7.6.201602180812</version.jacoco>
 		<version.junit>4.12</version.junit>
 		<version.mockito>1.10.19</version.mockito>
+		<version.powermock>1.6.5</version.powermock>
 		<version.resteasy>3.0.10.Final</version.resteasy>
 		<version.slf4j>1.7.10</version.slf4j>
 		<version.sonar-jacoco-listener>3.13.1</version.sonar-jacoco-listener>
@@ -106,6 +107,24 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${version.junit}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>${version.mockito}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-module-junit4</artifactId>
+			<version>${version.powermock}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-api-mockito</artifactId>
+			<version>${version.powermock}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
