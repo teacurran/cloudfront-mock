@@ -51,6 +51,7 @@
 
 	<modules>
 		<module>cloudfront-mock</module>
+		<module>cloudfront-mock-web</module>
 	</modules>
 
 	<dependencyManagement>
@@ -165,9 +166,9 @@
 			<type>pom</type>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.arquillian.container</groupId>
-			<artifactId>arquillian-tomcat-embedded-8</artifactId>
-			<version>1.0.0.CR7</version>
+			<groupId>org.wildfly</groupId>
+			<artifactId>wildfly-arquillian-container-embedded</artifactId>
+			<version>${version.wildfly}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -206,6 +207,36 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- You need the maven dependency plugin to download locally a zip with the server,
+			unless you provide your own, it will download under the /target directory -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.10</version>
+				<executions>
+					<execution>
+						<id>unpack</id>
+						<phase>process-test-classes</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.wildfly</groupId>
+									<artifactId>wildfly-dist</artifactId>
+									<version>${version.wildfly}</version>
+									<type>zip</type>
+									<overWrite>false</overWrite>
+									<outputDirectory>target</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>
