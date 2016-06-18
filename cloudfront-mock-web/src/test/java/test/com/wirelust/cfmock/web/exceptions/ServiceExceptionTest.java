@@ -18,12 +18,24 @@ public class ServiceExceptionTest {
 
 	@Test
 	public void shouldBeAbleToCreateException() {
+		ServiceException serviceException = new ServiceException();
+		assertTrue(RuntimeException.class.isAssignableFrom(serviceException.getClass()));
+	}
+
+	@Test
+	public void shouldBeAbleToCreateExceptionWithMessage() {
 		ServiceException serviceException = new ServiceException(TEST_MESSAGE);
 		assertEquals(TEST_MESSAGE, serviceException.getMessage());
 	}
 
 	@Test
 	public void shouldBeAbleToCreateExceptionWithCause() {
+		ServiceException serviceException = new ServiceException(new IllegalStateException("foo"));
+		assertTrue(serviceException.getCause() instanceof IllegalStateException);
+	}
+
+	@Test
+	public void shouldBeAbleToCreateExceptionWithMessageAndCause() {
 		ServiceException serviceException = new ServiceException(TEST_MESSAGE, new IllegalStateException("foo"));
 		assertEquals(TEST_MESSAGE, serviceException.getMessage());
 		assertTrue(serviceException.getCause() instanceof IllegalStateException);
