@@ -1,6 +1,5 @@
 package com.wirelust.cfmock;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -17,6 +16,9 @@ import com.amazonaws.services.cloudfront.util.SignerUtils;
 import com.wirelust.cfmock.exceptions.CFMockException;
 
 public class SignatureValidator {
+
+	public static final String PARAM_EXPIRES = "Expires";
+	public static final String PARAM_KEY_PAIR_ID = "Key-Pair-Id";
 
 	private SignatureValidator() {
 		// static only class
@@ -39,7 +41,7 @@ public class SignatureValidator {
 
 		Map<String, String> queryParams = splitQuery(url.getQuery());
 
-		Date expires = new Date(Long.parseLong(queryParams.get("Expires"))*1000);
+		Date expires = new Date(Long.parseLong(queryParams.get(PARAM_EXPIRES))*1000);
 
 		Date now = new Date();
 		if (now.getTime() > expires.getTime()) {
@@ -51,7 +53,7 @@ public class SignatureValidator {
 			path = path.substring(1);
 		}
 
-		String keyPairId = queryParams.get("Key-Pair-Id");
+		String keyPairId = queryParams.get(PARAM_KEY_PAIR_ID);
 
 		String signedUrl;
 		try {

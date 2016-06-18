@@ -17,10 +17,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.jboss.spec</groupId>
-			<artifactId>jboss-javaee-7.0</artifactId>
-			<scope>provided</scope>
-			<type>pom</type>
+			<groupId>com.wirelust.cloudfront-mock</groupId>
+			<artifactId>cloudfront-mock</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -31,6 +30,19 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.6.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.omnifaces</groupId>
+			<artifactId>omnifaces</artifactId>
+			<version>2.3</version>
+		</dependency>
+
+		<!-- Provided -->
+		<dependency>
+			<groupId>org.jboss.spec</groupId>
+			<artifactId>jboss-javaee-7.0</artifactId>
+			<scope>provided</scope>
+			<type>pom</type>
 		</dependency>
 
 		<!-- Test -->
@@ -73,9 +85,6 @@
 				<configuration>
 					<source>${maven.compiler.source}</source>
 					<target>${maven.compiler.target}</target>
-					<compilerArguments>
-						<processor>org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor</processor>
-					</compilerArguments>
 				</configuration>
 			</plugin>
 
