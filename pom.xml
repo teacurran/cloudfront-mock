@@ -27,6 +27,7 @@
 		<version.arquillian>1.1.11.Final</version.arquillian>
 		<version.arquillian.jacoco>1.0.0.Alpha8</version.arquillian.jacoco>
 		<version.arquillian.suite>1.1.2</version.arquillian.suite>
+		<version.arquillian.wf.container>2.0.0.Final</version.arquillian.wf.container>
 		<version.aws>1.11.8</version.aws>
 		<version.deltaspike>1.4.1</version.deltaspike>
 		<version.ee>1.0.2.Final</version.ee>
@@ -46,7 +47,7 @@
 		<version.surefire>2.19.1</version.surefire>
 		<version.war.plugin>2.1.1</version.war.plugin>
 		<version.mysql.connector>5.1.28</version.mysql.connector>
-		<version.wildfly>8.2.0.Final</version.wildfly>
+		<version.wildfly>10.0.0.Final</version.wildfly>
 	</properties>
 
 	<modules>
@@ -166,10 +167,9 @@
 			<type>pom</type>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly</groupId>
+			<groupId>org.wildfly.arquillian</groupId>
 			<artifactId>wildfly-arquillian-container-embedded</artifactId>
-			<version>${version.wildfly}</version>
-			<scope>test</scope>
+			<version>${version.arquillian.wf.container}</version>
 		</dependency>
 	</dependencies>
 
