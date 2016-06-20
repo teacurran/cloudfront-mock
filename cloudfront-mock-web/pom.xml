@@ -151,7 +151,6 @@
 					<forkMode>always</forkMode>
 					<trimStackTrace>false</trimStackTrace>
 					<systemPropertyVariables>
-						<app.cfmock.env>${project.basedir}/src/test/resources/config/test-config.properties</app.cfmock.env>
 						<java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
 						<!-- the maven dependency plugin will have already downloaded the server on /target -->
 						<jboss.home>${project.basedir}/../target/wildfly-${version.wildfly}</jboss.home>

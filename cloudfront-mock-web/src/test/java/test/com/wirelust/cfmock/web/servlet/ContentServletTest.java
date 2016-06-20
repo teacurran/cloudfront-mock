@@ -3,10 +3,13 @@ package test.com.wirelust.cfmock.web.servlet;
 import java.io.File;
 import java.net.URL;
 import java.util.Date;
+import javax.ws.rs.core.Response;
 
 import com.amazonaws.services.cloudfront.CloudFrontUrlSigner;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -22,6 +25,8 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Date: 19-Jun-2016
@@ -103,6 +108,9 @@ public class ContentServletTest {
 		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(null,
 			"localhost", keyFile, url, keyPairId, expiresDate);
 
+		HttpGet get = new HttpGet(signedUrl);
+		HttpResponse response = client.execute(get);
+		assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
 		LOGGER.info("url:{}", signedUrl);
 	}
 
