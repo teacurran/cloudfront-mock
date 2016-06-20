@@ -8,9 +8,11 @@ import java.io.Serializable;
 import java.util.Properties;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.wirelust.cfmock.web.exceptions.ServiceException;
+import com.wirelust.cfmock.web.qualifiers.ClasspathResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +32,10 @@ public class Configuration implements Serializable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 
+	@Inject
+	@ClasspathResource("defaults.properties")
+	Properties defaultProperties;
+
 	Properties configuredProperties = new Properties();
 
 	boolean loaded = false;
@@ -40,7 +46,7 @@ public class Configuration implements Serializable {
 		LOGGER.info("{}={}", ENV_FILE_NAME, configFileName);
 
 		if (configFileName == null) {
-			LOGGER.error("{} was not specified. using defaults only");
+			LOGGER.error("{} was not specified. using defaults only", ENV_FILE_NAME);
 			return;
 		}
 
@@ -55,6 +61,10 @@ public class Configuration implements Serializable {
 
 		if (this.configuredProperties.containsKey(key)) {
 			return this.configuredProperties.getProperty(key);
+		}
+
+		if (this.defaultProperties.containsKey(key)) {
+			return this.defaultProperties.getProperty(key);
 		}
 
 		return null;

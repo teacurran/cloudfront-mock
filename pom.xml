@@ -37,7 +37,7 @@
 		<!-- Hibernate Tools requires a different version than what is shipped with the app serever-->
 		<version.hibernate.tools>4.3.1-CR1</version.hibernate.tools>
 		<version.hibernate.tools.hibernate>4.0.1.Final</version.hibernate.tools.hibernate>
-		<version.jacoco>0.7.6.201602180812</version.jacoco>
+		<version.jacoco>0.7.7.201606060606</version.jacoco>
 		<version.junit>4.12</version.junit>
 		<version.mockito>1.10.19</version.mockito>
 		<version.powermock>1.6.5</version.powermock>
@@ -141,12 +141,14 @@
 			<version>${version.sonar-jacoco-listener}</version>
 			<scope>test</scope>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>org.jboss.arquillian.extension</groupId>
 			<artifactId>arquillian-jacoco</artifactId>
 			<version>${version.arquillian.jacoco}</version>
 			<scope>test</scope>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>org.jboss.arquillian</groupId>
 			<artifactId>arquillian-bom</artifactId>
@@ -166,9 +168,16 @@
 			<scope>test</scope>
 			<type>pom</type>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>org.wildfly.arquillian</groupId>
 			<artifactId>wildfly-arquillian-container-embedded</artifactId>
+			<version>${version.arquillian.wf.container}</version>
+		</dependency>
+		-->
+		<dependency>
+			<groupId>org.wildfly.arquillian</groupId>
+			<artifactId>wildfly-arquillian-container-managed</artifactId>
 			<version>${version.arquillian.wf.container}</version>
 		</dependency>
 	</dependencies>
