@@ -45,6 +45,7 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
+		super.init(filterConfig);
 		String keysString = configuration.getSetting("keys");
 		keys = Arrays.asList(keysString.split(","));
 

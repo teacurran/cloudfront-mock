@@ -63,7 +63,7 @@ public class Configuration implements Serializable {
 			return this.configuredProperties.getProperty(key);
 		}
 
-		if (this.defaultProperties.containsKey(key)) {
+		if (defaultProperties != null && defaultProperties.containsKey(key)) {
 			return this.defaultProperties.getProperty(key);
 		}
 

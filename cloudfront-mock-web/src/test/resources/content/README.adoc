@@ -1,6 +1,0 @@
-Some of the content in this directory came from https://github.com/IDPF/epub3-samples
-
-It is licensed under CC-BY-SA 3.0 license
-http://creativecommons.org/licenses/by-sa/3.0/
-
-An epub was chosen because it contains several types of content and characters to test.
