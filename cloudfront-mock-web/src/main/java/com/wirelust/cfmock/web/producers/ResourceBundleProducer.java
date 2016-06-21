@@ -40,13 +40,15 @@ public class ResourceBundleProducer {
 	}
 
 	private String getName(InjectionPoint ip) {
+		String name = null;
 		Set<Annotation> qualifiers = ip.getQualifiers();
 		for (Annotation qualifier : qualifiers) {
 			if (qualifier.annotationType().equals(ClasspathResource.class)) {
-				return ((ClasspathResource) qualifier).value();
+				name = ((ClasspathResource) qualifier).value();
+				break;
 			}
 		}
-		throw new IllegalArgumentException("Injection point " + ip + " does not have @Resource qualifier");
+		return name;
 	}
 
 

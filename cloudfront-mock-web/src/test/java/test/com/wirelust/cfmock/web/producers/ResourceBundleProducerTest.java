@@ -30,6 +30,9 @@ public class ResourceBundleProducerTest {
 	@ClasspathResource("invalid.properties")
 	Properties invalidProperties;
 
+	@Inject
+	ResourceBundleProducer resourceBundleProducer;
+
 	@Test
 	public void shouldBeAbleToLoadResource() {
 		Assert.assertEquals("default", defaultProperties.getProperty("applicationSetting"));
