@@ -85,6 +85,7 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 
 		String keyId = servletRequest.getParameter(SignatureValidator.PARAM_KEY_PAIR_ID);
 		if (keyId != null && keys.get(keyId) != null) {
+			LOGGER.debug("validating against keyId:{}", keyId);
 
 			Appendable requestUrl = request.getRequestURL();
 			requestUrl.append("?").append(request.getQueryString());

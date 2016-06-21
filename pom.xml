@@ -141,14 +141,12 @@
 			<version>${version.sonar-jacoco-listener}</version>
 			<scope>test</scope>
 		</dependency>
-		<!--
 		<dependency>
 			<groupId>org.jboss.arquillian.extension</groupId>
 			<artifactId>arquillian-jacoco</artifactId>
 			<version>${version.arquillian.jacoco}</version>
 			<scope>test</scope>
 		</dependency>
-		-->
 		<dependency>
 			<groupId>org.jboss.arquillian</groupId>
 			<artifactId>arquillian-bom</artifactId>

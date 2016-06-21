@@ -27,7 +27,7 @@ public class ConfigurationTest {
 
 	@Before
 	public void init() throws Exception {
-		URL configUrl = this.getClass().getResource("/config/test-config.properties");
+		URL configUrl = this.getClass().getResource("/defaults.properties");
 		System.setProperty(Configuration.ENV_FILE_NAME, configUrl.toURI().getPath());
 		config.init();
 	}

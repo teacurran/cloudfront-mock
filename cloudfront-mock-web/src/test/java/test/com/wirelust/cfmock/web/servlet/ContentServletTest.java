@@ -58,7 +58,7 @@ public class ContentServletTest {
 		testWar.addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/beans.xml")), "beans.xml");
 		testWar.addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/web.xml")), "web.xml");
 
-		testWar.addAsWebInfResource("config/test-config.properties", "classes/defaults.properties");
+		testWar.addAsWebInfResource("defaults.properties", "classes/defaults.properties");
 
 		//testWar.addAsLibraries(Maven.resolver().loadPomFromFile("pom.xml")
 		//		.importDependencies(ScopeType.RUNTIME)
@@ -106,7 +106,7 @@ public class ContentServletTest {
 		Date expiresDate = new Date(new Date().getTime() + EXPIRES_IN);
 
 		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(null,
-			"localhost", keyFile, url, keyPairId, expiresDate);
+			null, keyFile, url, keyPairId, expiresDate);
 
 		HttpGet get = new HttpGet(signedUrl);
 		HttpResponse response = client.execute(get);

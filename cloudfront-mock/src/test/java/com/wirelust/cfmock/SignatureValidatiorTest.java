@@ -44,12 +44,12 @@ public class SignatureValidatiorTest {
 	public void shouldBeAbleToValidateSignedURL() throws Exception {
 		String distributionDomain = "localhost";
 
-		String s3Path = "test/url.html";
+		String url = "http://localhost/test/url.html";
 
 		Date expiresDate = new Date(new Date().getTime() + EXPIRES_IN);
 
-		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(SignerUtils.Protocol.https,
-			distributionDomain, keyFile, s3Path, keyPairId, expiresDate);
+		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(null,
+			null, keyFile, url, keyPairId, expiresDate);
 
 		assertTrue(SignatureValidator.validateSignedUrl(keyFile, signedUrl));
 	}
@@ -58,12 +58,12 @@ public class SignatureValidatiorTest {
 	public void shouldNotBeAbleToSignWithBadPemKey() throws Exception {
 		String distributionDomain = "localhost";
 
-		String s3Path = "test/url.html";
+		String url = "http://localhost/test/url.html";
 
 		Date expiresDate = new Date(new Date().getTime() + EXPIRES_IN);
 
-		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(SignerUtils.Protocol.https,
-			distributionDomain, keyFile, s3Path, keyPairId, expiresDate);
+		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(null, null, keyFile, url, keyPairId,
+			expiresDate);
 
 		try {
 			SignatureValidator.validateSignedUrl(new File("/file/does/not/exist.pem"), signedUrl);

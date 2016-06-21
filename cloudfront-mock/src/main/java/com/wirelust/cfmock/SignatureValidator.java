@@ -12,13 +12,18 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.amazonaws.services.cloudfront.CloudFrontUrlSigner;
-import com.amazonaws.services.cloudfront.util.SignerUtils;
 import com.wirelust.cfmock.exceptions.CFMockException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SignatureValidator {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(SignatureValidator.class);
+
 	public static final String PARAM_EXPIRES = "Expires";
 	public static final String PARAM_KEY_PAIR_ID = "Key-Pair-Id";
+	public static final String PROTOCOL_HTTP = "http";
+	public static final String PROTOCOL_HTTPS = "https";
 
 	private SignatureValidator() {
 		// static only class
@@ -48,18 +53,18 @@ public class SignatureValidator {
 			throw new CFMockException("Signature is expired");
 		}
 
-		String path = url.getPath();
-		if (path.startsWith("/")) {
-			path = path.substring(1);
-		}
+		String port = getPort(url);
 
+		String urlToCheck = url.getProtocol() + "://" + url.getHost() + port + url.getPath();
+
+		LOGGER.debug("checking URL:{}", urlToCheck);
 		String keyPairId = queryParams.get(PARAM_KEY_PAIR_ID);
 
 		String signedUrl;
 		try {
 			signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(
-						SignerUtils.Protocol.https, url.getHost(), keyFile,
-						path, keyPairId, expires);
+						null, null, keyFile,
+						urlToCheck, keyPairId, expires);
 		} catch (InvalidKeySpecException | IOException e) {
 			throw new CFMockException(e);
 		}
@@ -84,5 +89,17 @@ public class SignatureValidator {
 			}
 		}
 		return queryPairs;
+	}
+
+	private static String getPort(URL url) {
+		if (url.getPort() == -1) {
+			return "";
+		}
+		String port = "";
+		if (url.getProtocol().equalsIgnoreCase(PROTOCOL_HTTP) && url.getPort() != 80
+				|| url.getProtocol().equalsIgnoreCase(PROTOCOL_HTTPS) && url.getPort() != 443) {
+			port = ":" + url.getPort();
+		}
+		return port;
 	}
 }

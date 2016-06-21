@@ -19,6 +19,20 @@ abstract class AbstractPathAwareFilter implements Filter {
 	private FilterConfig filterConfig;
 	private String root;
 
+	@Override
+	public void init(FilterConfig pConfig) throws ServletException {
+		filterConfig = pConfig;
+		root = pConfig.getServletContext().getContextPath();
+		if (root.length() == 0) {
+			root = "/";
+		}
+		compilePaths();
+	}
+
+	@Override
+	public void destroy() {
+	}
+
 	protected abstract void compilePaths();
 
 	protected String getRoot() {
@@ -58,16 +72,5 @@ abstract class AbstractPathAwareFilter implements Filter {
 		return retval;
 	}
 
-	public void init(FilterConfig pConfig) throws ServletException {
-		filterConfig = pConfig;
-		root = pConfig.getServletContext().getContextPath();
-		if (root.length() == 0) {
-			root = "/";
-		}
-		compilePaths();
-	}
-
-	public void destroy() {
-	}
 
 }

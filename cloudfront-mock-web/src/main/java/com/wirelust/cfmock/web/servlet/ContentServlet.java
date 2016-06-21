@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.wirelust.cfmock.web.services.Configuration;
 import org.omnifaces.servlet.FileServlet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Date: 18-Jun-2016
@@ -15,6 +17,8 @@ import org.omnifaces.servlet.FileServlet;
  */
 @WebServlet("/*")
 public class ContentServlet extends FileServlet {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(ContentServlet.class);
 
 	@Inject
 	Configuration configuration;
@@ -28,6 +32,16 @@ public class ContentServlet extends FileServlet {
 			throw new IllegalArgumentException();
 		}
 
-		return new File(configuration.getSetting("root"), pathInfo);
+		String rootPath;
+		if (configuration.getSettingBool("root.inwar")) {
+			rootPath = httpServletRequest.getServletContext().getRealPath(configuration.getSetting("root"));
+		} else {
+			rootPath = configuration.getSetting("root");
+		}
+
+		File file = new File(rootPath, pathInfo);
+		LOGGER.debug("serving file:{}", file.getAbsolutePath());
+
+		return file;
 	}
 }
