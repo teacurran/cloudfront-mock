@@ -117,6 +117,10 @@ public class Configuration implements Serializable {
 		return Boolean.parseBoolean(resultString);
 	}
 
+	public void setSetting(final String key, final String value) {
+		this.configuredProperties.setProperty(key, value);
+	}
+
 	public boolean isLoaded() {
 		return loaded;
 	}
