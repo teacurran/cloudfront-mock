@@ -3,5 +3,55 @@
 image:http://jenkins.approachingpi.com/job/teacurran-cloudfront-mock.master.ci/badge/icon[build status (jenkins), link="http://jenkins.approachingpi.com/job/teacurran-cloudfront-mock.master.ci/"]
 image:https://img.shields.io/badge/license-MIT-blue.svg[License Badge, link="https://opensource.org/licenses/MIT"]
 
+Mock server for AWS Cloudfront signed url testing or for local hosting
 
-Mock server for cloudfront signed url testing or local hosting
+## Status
+
+
+.Table status
+[frame="all"]
+|===
+|Feature |Sub Feature| Status
+
+|Signed URL
+|with canned policy
+|Done
+
+|Signed URL
+|Custom Policy - Wildcard resource
+|TODO
+
+|Signed URL
+|Custom Policy - Begin TIme
+|TODO
+
+|Signed URL
+|Custom Policy - IP restriction
+|TODO
+
+|Signed URL
+|Custom Policy - Base64 Encoding
+|TODO
+
+|Signed Cookie
+|with canned policy
+|TODO
+
+|Signed Cookie
+|Custom Policy - Wildcard resource
+|TODO
+
+|Signed Cookie
+|Custom Policy - Begin TIme
+|TODO
+
+|Signed Cookie
+|Custom Policy - IP restriction
+|TODO
+
+|Signed Cookie
+|Custom Policy - Base64 Encoding
+|TODO
+
+|===
+
