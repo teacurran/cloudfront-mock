@@ -15,4 +15,7 @@ public class CFMockException extends RuntimeException {
 		super(message);
 	}
 
+	public CFMockException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

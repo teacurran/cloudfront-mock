@@ -11,6 +11,9 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.validation.constraints.NotNull;
+
+import com.amazonaws.services.cloudfront.CloudFrontCookieSigner;
 import com.amazonaws.services.cloudfront.CloudFrontUrlSigner;
 import com.wirelust.cfmock.exceptions.CFMockException;
 import org.slf4j.Logger;
@@ -76,6 +79,30 @@ public class SignatureValidator {
 		}
 
 		return resource.equals(signedUrl);
+	}
+
+	/**
+	 *
+	 * @param keyFile pem key file
+	 * @param keyId id of the key
+	 * @param expires date when the signature expires
+	 * @param signature signature
+	 * @return true if the signature is valid
+	 */
+	public static boolean validateSignature(@NotNull final String url,
+											@NotNull final File keyFile,
+											@NotNull final String keyId,
+											@NotNull final Date expires,
+											@NotNull final String signature) {
+		try {
+			CloudFrontCookieSigner.CookiesForCannedPolicy cookiesForCannedPolicy =
+				CloudFrontCookieSigner.getCookiesForCannedPolicy(null, null, keyFile, url, keyId, expires);
+
+			return signature.equals(cookiesForCannedPolicy.getSignature().getValue());
+		} catch (InvalidKeySpecException | IOException e) {
+			throw new CFMockException("unable to validate cookie", e);
+		}
+
 	}
 
 	public static Map<String, String> splitQuery(final String query) {

@@ -35,7 +35,7 @@ Mock server for AWS Cloudfront signed url testing or for local hosting
 
 |Signed Cookie
 |with canned policy
-|TODO
+|Done
 
 |Signed Cookie
 |Custom Policy - Wildcard resource
