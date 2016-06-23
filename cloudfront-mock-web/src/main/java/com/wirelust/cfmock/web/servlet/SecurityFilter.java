@@ -13,6 +13,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebInitParam;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -95,6 +96,12 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 				return;
 			}
 		} else {
+
+			keyId = getCookieValue(request, SignatureValidator.COOKIE_KEY_PAIR_ID);
+			String expires = getCookieValue(request, SignatureValidator.COOKIE_EXPIRES);
+			String signature = getCookieValue(request, SignatureValidator.COOKIE_SIGNATURE);
+
+			LOGGER.info("keyId:{}, expires:{}, signature:{}", keyId, expires, signature);
 			// check for cookie access
 		}
 
@@ -104,6 +111,19 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 	@Override
 	public void destroy() {
 		// do nothing
+	}
+
+	private String getCookieValue(final HttpServletRequest request, final String name) {
+		Cookie[] cookies = request.getCookies();
+		if (cookies == null || cookies.length == 0) {
+			return null;
+		}
+		for (Cookie cookie : cookies) {
+			if (cookie.getName().equals(name)) {
+				return cookie.getValue();
+			}
+		}
+		return null;
 	}
 
 	private boolean findKeyFile(ServletContext servletContext, String keyId, String keyLocation) {

@@ -22,6 +22,12 @@ public class SignatureValidator {
 
 	public static final String PARAM_EXPIRES = "Expires";
 	public static final String PARAM_KEY_PAIR_ID = "Key-Pair-Id";
+
+    public static final String COOKIE_EXPIRES = "CloudFront-Expires";
+    public static final String COOKIE_SIGNATURE = "CloudFront-Signature";
+    public static final String COOKIE_POLICY = "CloudFront-Policy";
+    public static final String COOKIE_KEY_PAIR_ID = "CloudFront-Key-Pair-Id";
+
 	public static final String PROTOCOL_HTTP = "http";
 	public static final String PROTOCOL_HTTPS = "https";
 
