@@ -105,6 +105,43 @@ public class SignatureValidator {
 
 	}
 
+	public static boolean validateSignature(@NotNull final SignedRequest signedRequest) {
+		checkForNulls(signedRequest);
+		if (signedRequest.getType() == SignedRequest.Type.REQUEST) {
+			return validateSignedUrl(signedRequest.getKeyFile(), signedRequest.getUrl());
+		} else {
+			return validateSignature(signedRequest.getUrl(),
+				signedRequest.getKeyFile(),
+				signedRequest.getKeyId(),
+				signedRequest.getExpires(),
+				signedRequest.getSignature());
+		}
+	}
+
+	private static void checkForNulls(@NotNull final SignedRequest signedRequest) {
+		if (signedRequest.getKeyFile() == null) {
+			throw new CFMockException("key file cannot be null");
+		}
+		if (signedRequest.getUrl() == null) {
+			throw new CFMockException("url cannot be null");
+		}
+		if (signedRequest.getType() == SignedRequest.Type.COOKIE) {
+			checkForCookieNulls(signedRequest);
+		}
+	}
+
+	private static void checkForCookieNulls(@NotNull final SignedRequest signedRequest) {
+		if (signedRequest.getKeyId() == null) {
+			throw new CFMockException("key id cannot be null for cookie based signatures");
+		}
+		if (signedRequest.getExpires() == null) {
+			throw new CFMockException("expires cannot be null for cookie based signatures");
+		}
+		if (signedRequest.getSignature() == null) {
+			throw new CFMockException("signature cannot be null for cookie based signatures");
+		}
+	}
+
 	public static Map<String, String> splitQuery(final String query) {
 		return splitQuery(query, Constants.DEFAULT_ENCODING);
 	}

@@ -8,7 +8,7 @@ import java.util.Date;
  *
  * @author T. Curran
  */
-public class SignatureRequest {
+public class SignedRequest {
 
 	public enum Type {
 		REQUEST, COOKIE
@@ -17,7 +17,7 @@ public class SignatureRequest {
 	Type type;
 	String keyId;
 	File keyFile;
-	String requestUrl;
+	String url;
 	Date expires;
 	String signature;
 
@@ -45,12 +45,12 @@ public class SignatureRequest {
 		this.keyFile = keyFile;
 	}
 
-	public String getRequestUrl() {
-		return requestUrl;
+	public String getUrl() {
+		return url;
 	}
 
-	public void setRequestUrl(String requestUrl) {
-		this.requestUrl = requestUrl;
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 	public Date getExpires() {

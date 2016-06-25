@@ -169,7 +169,7 @@ public class ContentServletTest {
 
 		HttpGet get = new HttpGet(signedUrl);
 		HttpResponse response = client.execute(get);
-		assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
+		assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatusLine().getStatusCode());
 	}
 
 	@Test

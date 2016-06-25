@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.wirelust.cfmock.SignatureValidator;
+import com.wirelust.cfmock.SignedRequest;
+import com.wirelust.cfmock.exceptions.CFMockException;
 import com.wirelust.cfmock.web.exceptions.ServiceException;
 import com.wirelust.cfmock.web.services.Configuration;
 import org.slf4j.Logger;
@@ -91,56 +93,28 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 			requestUrl.append("?").append(request.getQueryString());
 		}
 
-		boolean signatureIsValid = false;
+		SignedRequest signedRequest = new SignedRequest();
 
 		String keyId = servletRequest.getParameter(SignatureValidator.PARAM_KEY_PAIR_ID);
-		if (keyId != null && keys.get(keyId) == null) {
-			response.sendError(SC_FORBIDDEN);
-			return;
-		}
-
 		if (keyId != null) {
 			LOGGER.debug("validating against keyId:{}", keyId);
 
-			signatureIsValid = SignatureValidator.validateSignedUrl(keys.get(keyId), requestUrl.toString());
+			signedRequest.setType(SignedRequest.Type.REQUEST);
+			signedRequest.setKeyFile(keys.get(keyId));
+			LOGGER.info("setting key id:{}, file:{}", keyId, keys.get(keyId));
 		} else {
-
-			keyId = getCookieValue(request, SignatureValidator.COOKIE_KEY_PAIR_ID);
-			String signature = getCookieValue(request, SignatureValidator.COOKIE_SIGNATURE);
-
-			if (keyId != null && keys.get(keyId) == null) {
-				LOGGER.debug("key:{} not found", keyId);
-				response.sendError(SC_FORBIDDEN);
-				return;
-			}
-
-			if (signature == null) {
-				LOGGER.debug("signature is null");
-				response.sendError(SC_FORBIDDEN);
-				return;
-			}
-
-			String expiresString = getCookieValue(request, SignatureValidator.COOKIE_EXPIRES);
-			Date expires = null;
-			if (expiresString != null) {
-				try {
-					expires = new Date(Long.parseLong(expiresString)*1000);
-				} catch (NumberFormatException e) {
-					throw new ServiceException("expires cookie is invalid:" + expiresString);
-				}
-			}
-
-			signatureIsValid = SignatureValidator.validateSignature(requestUrl.toString(),
-				keys.get(keyId),
-				keyId,
-				expires,
-				signature);
-			LOGGER.info("keyId:{}, expires:{}, signature:{}", keyId, expires, signature);
-			// check for cookie access
+			populateSignedRequestFromCookies(signedRequest, request);
 		}
+		signedRequest.setUrl(requestUrl.toString());
 
-		if (signatureIsValid) {
-			filterChain.doFilter(servletRequest, servletResponse);
+		try {
+			if (SignatureValidator.validateSignature(signedRequest)) {
+				filterChain.doFilter(servletRequest, servletResponse);
+				return;
+			}
+		} catch (CFMockException e) {
+			LOGGER.error("unable to validate request", e);
+			response.sendError(SC_BAD_REQUEST);
 			return;
 		}
 
@@ -150,6 +124,23 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 	@Override
 	public void destroy() {
 		// do nothing
+	}
+
+	private void populateSignedRequestFromCookies(SignedRequest signedRequest, HttpServletRequest request) {
+		String keyId = getCookieValue(request, SignatureValidator.COOKIE_KEY_PAIR_ID);
+		signedRequest.setKeyFile(keys.get(keyId));
+		signedRequest.setType(SignedRequest.Type.COOKIE);
+		signedRequest.setKeyId(keyId);
+		signedRequest.setSignature(getCookieValue(request, SignatureValidator.COOKIE_SIGNATURE));
+
+		String expiresString = getCookieValue(request, SignatureValidator.COOKIE_EXPIRES);
+		if (expiresString != null) {
+			try {
+				signedRequest.setExpires(new Date(Long.parseLong(expiresString)*1000));
+			} catch (NumberFormatException e) {
+				throw new ServiceException("expires cookie is invalid:" + expiresString);
+			}
+		}
 	}
 
 	private String getCookieValue(final HttpServletRequest request, final String name) {
