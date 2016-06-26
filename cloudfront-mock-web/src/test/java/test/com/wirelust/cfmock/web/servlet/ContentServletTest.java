@@ -56,6 +56,8 @@ public class ContentServletTest {
 	private static final String KEY_PAIR_ID_1 = "key1";
 	private static final String KEY_PAIR_ID_2 = "key2";
 
+	private static final String DEFAULT_CHARSET = "UTF-8";
+
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();
 
@@ -126,7 +128,7 @@ public class ContentServletTest {
 		assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
 
 		HttpEntity httpEntity = response.getEntity();
-		String responseContent = IOUtils.toString(httpEntity.getContent(), "UTF-8");
+		String responseContent = IOUtils.toString(httpEntity.getContent(), DEFAULT_CHARSET);
 
 		// random string found in the document
 		assertTrue(responseContent.contains("Chapter 1. Loomings."));
@@ -153,7 +155,7 @@ public class ContentServletTest {
 		assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
 
 		HttpEntity httpEntity = response.getEntity();
-		String responseContent = IOUtils.toString(httpEntity.getContent(), "UTF-8");
+		String responseContent = IOUtils.toString(httpEntity.getContent(), DEFAULT_CHARSET);
 
 		// random string found in the document
 		assertTrue(responseContent.contains("Call me Ishmael."));
@@ -206,7 +208,38 @@ public class ContentServletTest {
 		assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
 
 		HttpEntity httpEntity = response.getEntity();
-		String responseContent = IOUtils.toString(httpEntity.getContent(), "UTF-8");
+		String responseContent = IOUtils.toString(httpEntity.getContent(), DEFAULT_CHARSET);
+
+		// random string found in the document
+		assertTrue(responseContent.contains("Chapter 1. Loomings."));
+
+	}
+
+	@Test
+	public void shouldBeAbleToAccessContentWithSignedWildcardCookie() throws Exception {
+
+		String url = ROOT_URL + "/web/content/moby-dick/OPS/toc.xhtml";
+
+		HttpGet get = new HttpGet(url);
+
+
+		CloudFrontCookieSigner.CookiesForCustomPolicy cookiesForCustomPolicy =
+			CloudFrontCookieSigner.getCookiesForCustomPolicy(null, null, keyFile,
+				"http*://*/web/content/*", KEY_PAIR_ID_1, expiresDate, new Date(), null);
+
+		ClientCookie policyCookie = getCookie(cookiesForCustomPolicy.getPolicy());
+		ClientCookie signatureCookie = getCookie(cookiesForCustomPolicy.getSignature());
+		ClientCookie keyPairIdCookie = getCookie(cookiesForCustomPolicy.getKeyPairId());
+
+		cookieStore.addCookie(policyCookie);
+		cookieStore.addCookie(signatureCookie);
+		cookieStore.addCookie(keyPairIdCookie);
+
+		HttpResponse response = client.execute(get);
+		assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
+
+		HttpEntity httpEntity = response.getEntity();
+		String responseContent = IOUtils.toString(httpEntity.getContent(), DEFAULT_CHARSET);
 
 		// random string found in the document
 		assertTrue(responseContent.contains("Chapter 1. Loomings."));
@@ -214,6 +247,7 @@ public class ContentServletTest {
 	}
 
 	private ClientCookie getCookie(final Map.Entry<String, String> entry) {
+		LOGGER.info("getting cookie key:{} value:{}", entry.getKey(), entry.getValue());
 		BasicClientCookie cookie = new BasicClientCookie(entry.getKey(), entry.getValue());
 		cookie.setDomain("localhost");
 		return cookie;
