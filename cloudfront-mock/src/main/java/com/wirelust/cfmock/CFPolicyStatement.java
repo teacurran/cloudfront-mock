@@ -7,7 +7,7 @@ import java.util.Date;
  *
  * @author T. Curran
  */
-public class PolicyStatement {
+public class CFPolicyStatement {
 
 	String resource;
 	Date dateLessThan;

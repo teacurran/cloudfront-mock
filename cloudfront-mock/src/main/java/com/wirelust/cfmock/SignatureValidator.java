@@ -15,6 +15,7 @@ import javax.validation.constraints.NotNull;
 
 import com.amazonaws.services.cloudfront.CloudFrontCookieSigner;
 import com.amazonaws.services.cloudfront.CloudFrontUrlSigner;
+import com.amazonaws.services.identitymanagement.model.Statement;
 import com.wirelust.cfmock.exceptions.CFMockException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,16 +106,49 @@ public class SignatureValidator {
 
 	}
 
+	public static boolean validateSignature(@NotNull final String url,
+											@NotNull final File keyFile,
+											@NotNull final String keyId,
+											@NotNull final CFPolicy policy,
+											@NotNull final String signature) {
+		try {
+
+		if (policy.getStatements() == null || policy.getStatements().size() > 1) {
+			throw new CFMockException("Only one policy statement supported at this time");
+		}
+
+		CFPolicyStatement statement = policy.getStatements().get(0);
+
+		CloudFrontCookieSigner.CookiesForCustomPolicy cookiesForCustomPolicy =
+			CloudFrontCookieSigner.getCookiesForCustomPolicy(null, null, keyFile,
+				"http*://*/web/content/*", keyId, statement.dateLessThan, statement.getDateGreaterThan(), null);
+
+			return signature.equals(cookiesForCustomPolicy.getSignature().getValue());
+		} catch (InvalidKeySpecException | IOException e) {
+			throw new CFMockException("unable to validate cookie", e);
+		}
+
+	}
+
+
 	public static boolean validateSignature(@NotNull final SignedRequest signedRequest) {
 		checkForNulls(signedRequest);
 		if (signedRequest.getType() == SignedRequest.Type.REQUEST) {
 			return validateSignedUrl(signedRequest.getKeyFile(), signedRequest.getUrl());
 		} else {
-			return validateSignature(signedRequest.getUrl(),
-				signedRequest.getKeyFile(),
-				signedRequest.getKeyId(),
-				signedRequest.getExpires(),
-				signedRequest.getSignature());
+			if (signedRequest.getPolicy() == null) {
+				return validateSignature(signedRequest.getUrl(),
+					signedRequest.getKeyFile(),
+					signedRequest.getKeyId(),
+					signedRequest.getExpires(),
+					signedRequest.getSignature());
+			} else {
+				return validateSignature(signedRequest.getUrl(),
+					signedRequest.getKeyFile(),
+					signedRequest.getKeyId(),
+					signedRequest.getPolicy(),
+					signedRequest.getSignature());
+			}
 		}
 	}
 
@@ -134,8 +168,8 @@ public class SignatureValidator {
 		if (signedRequest.getKeyId() == null) {
 			throw new CFMockException("key id cannot be null for cookie based signatures");
 		}
-		if (signedRequest.getExpires() == null) {
-			throw new CFMockException("expires cannot be null for cookie based signatures");
+		if (signedRequest.getExpires() == null && signedRequest.getPolicy() == null) {
+			throw new CFMockException("either expires or policy must be set for cookie based signatures");
 		}
 		if (signedRequest.getSignature() == null) {
 			throw new CFMockException("signature cannot be null for cookie based signatures");

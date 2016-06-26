@@ -20,6 +20,7 @@ public class SignedRequest {
 	String url;
 	Date expires;
 	String signature;
+	CFPolicy policy;
 
 	public Type getType() {
 		return type;
@@ -67,5 +68,13 @@ public class SignedRequest {
 
 	public void setSignature(String signature) {
 		this.signature = signature;
+	}
+
+	public CFPolicy getPolicy() {
+		return policy;
+	}
+
+	public void setPolicy(CFPolicy policy) {
+		this.policy = policy;
 	}
 }

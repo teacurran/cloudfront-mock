@@ -8,15 +8,15 @@ import java.util.List;
  *
  * @author T. Curran
  */
-public class Policy {
+public class CFPolicy {
 
-	List<Statement> statements;
+	List<CFPolicyStatement> statements;
 
-	public List<Statement> getStatements() {
+	public List<CFPolicyStatement> getStatements() {
 		return statements;
 	}
 
-	public void setStatements(List<Statement> statements) {
+	public void setStatements(List<CFPolicyStatement> statements) {
 		this.statements = statements;
 	}
 }

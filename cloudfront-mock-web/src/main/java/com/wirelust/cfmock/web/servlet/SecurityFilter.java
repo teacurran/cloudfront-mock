@@ -2,6 +2,7 @@ package com.wirelust.cfmock.web.servlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.regex.Pattern;
@@ -18,10 +19,14 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.wirelust.cfmock.SignatureValidator;
 import com.wirelust.cfmock.SignedRequest;
 import com.wirelust.cfmock.exceptions.CFMockException;
 import com.wirelust.cfmock.web.exceptions.ServiceException;
+import com.wirelust.cfmock.web.json.PolicyHelper;
+import com.wirelust.cfmock.web.representations.Policy;
 import com.wirelust.cfmock.web.services.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,6 +137,8 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 		signedRequest.setType(SignedRequest.Type.COOKIE);
 		signedRequest.setKeyId(keyId);
 		signedRequest.setSignature(getCookieValue(request, SignatureValidator.COOKIE_SIGNATURE));
+		LOGGER.info("here 0");
+		populateSignedRequestPolicyFromCookies(signedRequest, request);
 
 		String expiresString = getCookieValue(request, SignatureValidator.COOKIE_EXPIRES);
 		if (expiresString != null) {
@@ -140,6 +147,28 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 			} catch (NumberFormatException e) {
 				throw new ServiceException("expires cookie is invalid:" + expiresString);
 			}
+		}
+
+	}
+
+	private void populateSignedRequestPolicyFromCookies(SignedRequest signedRequest, HttpServletRequest request) {
+		LOGGER.info("here 1");
+		String policyBase64 = getCookieValue(request, SignatureValidator.COOKIE_POLICY);
+		if (policyBase64 == null) {
+		LOGGER.info("here 1.2");
+
+			return;
+		}
+		String policyJson = new String(Base64.getDecoder().decode(policyBase64));
+
+		ObjectReader objectReader = new ObjectMapper().readerFor(Policy.class);
+		try {
+		LOGGER.info("here 2");
+			Policy policy = objectReader.readValue(policyJson);
+			signedRequest.setPolicy(PolicyHelper.toCfPolicy(policy));
+		LOGGER.info("here 3");
+		} catch (IOException e) {
+			throw new ServiceException("unable to decode policyJson:{}" + policyJson, e);
 		}
 	}
 
