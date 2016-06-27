@@ -121,7 +121,7 @@ public class SignatureValidator {
 
 		CloudFrontCookieSigner.CookiesForCustomPolicy cookiesForCustomPolicy =
 			CloudFrontCookieSigner.getCookiesForCustomPolicy(null, null, keyFile,
-				"http*://*/web/content/*", keyId, statement.dateLessThan, statement.getDateGreaterThan(), null);
+				statement.getResource(), keyId, statement.dateLessThan, statement.getDateGreaterThan(), null);
 
 			return signature.equals(cookiesForCustomPolicy.getSignature().getValue());
 		} catch (InvalidKeySpecException | IOException e) {
