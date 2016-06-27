@@ -17,7 +17,6 @@ import javax.servlet.annotation.WebInitParam;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.bind.DatatypeConverter;
 
 import com.amazonaws.util.Base64;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,7 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.wirelust.cfmock.web.servlet.SecurityFilter.PUBLIC_PATHS_PARAM;
-import static javax.servlet.http.HttpServletResponse.*;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 
 /**
  * Date: 18-Jun-2016
@@ -157,7 +157,7 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 		if (policyBase64 == null) {
 			return;
 		}
-		LOGGER.info("decoding base64:{}", policyBase64);
+		LOGGER.debug("decoding base64:{}", policyBase64);
 		try {
 			String policyJson = new String(Base64.decode(policyBase64.replaceAll("_", "=")));
 

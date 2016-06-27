@@ -198,13 +198,10 @@ public class ContentServletTest {
 		CloudFrontCookieSigner.CookiesForCannedPolicy cookiesForCannedPolicy =
 			CloudFrontCookieSigner.getCookiesForCannedPolicy(null, null, keyFile, url, KEY_PAIR_ID_1, expiresDate);
 
-		ClientCookie expiresCookie = getCookie(cookiesForCannedPolicy.getExpires());
-		ClientCookie signatureCookie = getCookie(cookiesForCannedPolicy.getSignature());
-		ClientCookie keyPairIdCookie = getCookie(cookiesForCannedPolicy.getKeyPairId());
+		addToCookieStore(cookieStore, cookiesForCannedPolicy);
 
+		ClientCookie expiresCookie = getCookie(cookiesForCannedPolicy.getExpires());
 		cookieStore.addCookie(expiresCookie);
-		cookieStore.addCookie(signatureCookie);
-		cookieStore.addCookie(keyPairIdCookie);
 
 		HttpResponse response = client.execute(get);
 		assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
@@ -216,6 +213,7 @@ public class ContentServletTest {
 		assertTrue(responseContent.contains("Chapter 1. Loomings."));
 
 	}
+
 
 	@Test
 	public void shouldBeAbleToAccessContentWithSignedWildcardCookie() throws Exception {
@@ -229,13 +227,10 @@ public class ContentServletTest {
 			CloudFrontCookieSigner.getCookiesForCustomPolicy(null, null, keyFile,
 				"http*://*/web/content/*", KEY_PAIR_ID_1, expiresDate, new Date(), null);
 
-		ClientCookie policyCookie = getCookie(cookiesForCustomPolicy.getPolicy());
-		ClientCookie signatureCookie = getCookie(cookiesForCustomPolicy.getSignature());
-		ClientCookie keyPairIdCookie = getCookie(cookiesForCustomPolicy.getKeyPairId());
+		addToCookieStore(cookieStore, cookiesForCustomPolicy);
 
+		ClientCookie policyCookie = getCookie(cookiesForCustomPolicy.getPolicy());
 		cookieStore.addCookie(policyCookie);
-		cookieStore.addCookie(signatureCookie);
-		cookieStore.addCookie(keyPairIdCookie);
 
 		HttpResponse response = client.execute(get);
 		assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
@@ -246,6 +241,36 @@ public class ContentServletTest {
 		// random string found in the document
 		assertTrue(responseContent.contains("Chapter 1. Loomings."));
 
+	}
+
+	@Test
+	public void shouldRejectAccessContentWithInvalidWildcardCookie() throws Exception {
+
+		String url = ROOT_URL + "/web/content/moby-dick/OPS/toc.xhtml";
+
+		HttpGet get = new HttpGet(url);
+
+
+		CloudFrontCookieSigner.CookiesForCustomPolicy cookiesForCustomPolicy =
+			CloudFrontCookieSigner.getCookiesForCustomPolicy(null, null, keyFile,
+				"http*://*/web/content2/*", KEY_PAIR_ID_1, expiresDate, new Date(), null);
+
+		addToCookieStore(cookieStore, cookiesForCustomPolicy);
+
+		ClientCookie policyCookie = getCookie(cookiesForCustomPolicy.getPolicy());
+		cookieStore.addCookie(policyCookie);
+
+		HttpResponse response = client.execute(get);
+		assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
+	}
+
+
+	private void addToCookieStore(CookieStore cookieStore, CloudFrontCookieSigner.SignedCookies signedCookies) {
+		ClientCookie signatureCookie = getCookie(signedCookies.getSignature());
+		cookieStore.addCookie(signatureCookie);
+
+		ClientCookie keyPairIdCookie = getCookie(signedCookies.getKeyPairId());
+		cookieStore.addCookie(keyPairIdCookie);
 	}
 
 	private ClientCookie getCookie(final Map.Entry<String, String> entry) {

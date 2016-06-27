@@ -10,13 +10,12 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import javax.validation.constraints.NotNull;
 
 import com.amazonaws.services.cloudfront.CloudFrontCookieSigner;
 import com.amazonaws.services.cloudfront.CloudFrontUrlSigner;
-import com.amazonaws.services.identitymanagement.model.Statement;
 import com.wirelust.cfmock.exceptions.CFMockException;
+import com.wirelust.cfmock.util.WildcardMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,6 +117,11 @@ public class SignatureValidator {
 		}
 
 		CFPolicyStatement statement = policy.getStatements().get(0);
+
+		if (!WildcardMatcher.matches(url, statement.getResource())) {
+			LOGGER.debug("url:{} does not match:{}", url, statement.getResource());
+			return false;
+		}
 
 		CloudFrontCookieSigner.CookiesForCustomPolicy cookiesForCustomPolicy =
 			CloudFrontCookieSigner.getCookiesForCustomPolicy(null, null, keyFile,
