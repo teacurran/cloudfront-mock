@@ -78,6 +78,8 @@ public class ContentServletTest {
 
 		testWar.addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/beans.xml")), "beans.xml");
 		testWar.addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/web.xml")), "web.xml");
+		testWar.addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/jboss-deployment-structure.xml")),
+			"jboss-deployment-structure.xml");
 
 		testWar.addAsWebInfResource("defaults.properties", "classes/defaults.properties");
 

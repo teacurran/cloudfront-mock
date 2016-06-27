@@ -2,7 +2,6 @@ package com.wirelust.cfmock.web.servlet;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.regex.Pattern;
@@ -18,7 +17,9 @@ import javax.servlet.annotation.WebInitParam;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.DatatypeConverter;
 
+import com.amazonaws.util.Base64;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.wirelust.cfmock.SignatureValidator;
@@ -152,23 +153,20 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 	}
 
 	private void populateSignedRequestPolicyFromCookies(SignedRequest signedRequest, HttpServletRequest request) {
-		LOGGER.info("here 1");
 		String policyBase64 = getCookieValue(request, SignatureValidator.COOKIE_POLICY);
 		if (policyBase64 == null) {
-		LOGGER.info("here 1.2");
-
 			return;
 		}
-		String policyJson = new String(Base64.getDecoder().decode(policyBase64));
-
-		ObjectReader objectReader = new ObjectMapper().readerFor(Policy.class);
+		LOGGER.info("decoding base64:{}", policyBase64);
 		try {
-		LOGGER.info("here 2");
+			String policyJson = new String(Base64.decode(policyBase64.replaceAll("_", "=")));
+
+			ObjectReader objectReader = new ObjectMapper().readerFor(Policy.class);
+
 			Policy policy = objectReader.readValue(policyJson);
 			signedRequest.setPolicy(PolicyHelper.toCfPolicy(policy));
-		LOGGER.info("here 3");
 		} catch (IOException e) {
-			throw new ServiceException("unable to decode policyJson:{}" + policyJson, e);
+			throw new ServiceException("unable to decode policyBase64:" + policyBase64, e);
 		}
 	}
 
