@@ -24,7 +24,6 @@ public class ConfigurationTest {
 	@Spy
 	Configuration config = new Configuration();
 
-
 	@Before
 	public void init() throws Exception {
 		URL configUrl = this.getClass().getResource("/defaults.properties");
