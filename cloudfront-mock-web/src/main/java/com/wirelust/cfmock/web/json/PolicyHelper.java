@@ -37,6 +37,10 @@ public class PolicyHelper {
 	}
 
 	public static CFPolicyStatement toCfPolicyStatement(final Statement statement) {
+		if (statement == null) {
+			return null;
+		}
+
 		CFPolicyStatement cfPolicyStatement = new CFPolicyStatement();
 		cfPolicyStatement.setResource(statement.getResource());
 
