@@ -39,10 +39,10 @@ Mock server for AWS Cloudfront signed url testing or for local hosting
 
 |Signed Cookie
 |Custom Policy - Wildcard resource
-|TODO
+|Done
 
 |Signed Cookie
-|Custom Policy - Begin TIme
+|Custom Policy - Begin Time
 |TODO
 
 |Signed Cookie
