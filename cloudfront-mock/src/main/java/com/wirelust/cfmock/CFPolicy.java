@@ -1,5 +1,6 @@
 package com.wirelust.cfmock;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,7 +12,14 @@ public class CFPolicy {
 
 	List<CFPolicyStatement> statements;
 
+	public void addStatement(CFPolicyStatement statement) {
+		this.getStatements().add(statement);
+	}
+
 	public List<CFPolicyStatement> getStatements() {
+		if (statements == null) {
+			statements = new ArrayList<>();
+		}
 		return statements;
 	}
 

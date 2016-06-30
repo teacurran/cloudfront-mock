@@ -157,6 +157,9 @@ public class SignatureValidator {
 	}
 
 	private static void checkForNulls(@NotNull final SignedRequest signedRequest) {
+		if (signedRequest.getType() == null) {
+			throw new CFMockException("request type cannot be null");
+		}
 		if (signedRequest.getKeyFile() == null) {
 			throw new CFMockException("key file cannot be null");
 		}

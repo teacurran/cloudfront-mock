@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Map;
 
+import com.amazonaws.services.cloudfront.CloudFrontCookieSigner;
 import com.amazonaws.services.cloudfront.CloudFrontUrlSigner;
 import com.amazonaws.services.cloudfront.util.SignerUtils;
 import com.wirelust.cfmock.exceptions.CFMockException;
@@ -31,6 +32,8 @@ public class SignatureValidatiorTest {
 	URL pemUrl;
 	File keyFile;
 	String keyPairId = "test-keypair";
+	Date expiresDate;
+	String testUrl = "http://localhost/test/url.html";
 
 	@Before
 	public void init() throws Exception {
@@ -38,25 +41,152 @@ public class SignatureValidatiorTest {
 		if (pemUrl != null) {
 			keyFile = new File(pemUrl.toURI());
 		}
+		expiresDate = new Date(new Date().getTime() + EXPIRES_IN);
 	}
 
 	@Test
 	public void shouldBeAbleToValidateSignedURL() throws Exception {
-		String distributionDomain = "localhost";
-
-		String url = "http://localhost/test/url.html";
-
-		Date expiresDate = new Date(new Date().getTime() + EXPIRES_IN);
-
 		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(null,
-			null, keyFile, url, keyPairId, expiresDate);
+			null, keyFile, testUrl, keyPairId, expiresDate);
 
 		assertTrue(SignatureValidator.validateSignedUrl(keyFile, signedUrl));
 	}
 
 	@Test
+	public void shouldBeAbleToValidateSignedURLWithCannedPolicy() throws Exception {
+		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(null,
+			null, keyFile, testUrl, keyPairId, expiresDate);
+
+		SignedRequest signedRequest = new SignedRequest();
+		signedRequest.setType(SignedRequest.Type.REQUEST);
+		signedRequest.setUrl(signedUrl);
+		signedRequest.setExpires(expiresDate);
+		signedRequest.setKeyFile(keyFile);
+		signedRequest.setKeyId(keyPairId);
+
+		assertTrue(SignatureValidator.validateSignature(signedRequest));
+	}
+
+	@Test
+	public void shouldValidateParametersRorSignedRequest() throws Exception {
+		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(null,
+			null, keyFile, testUrl, keyPairId, expiresDate);
+
+		SignedRequest signedRequest = new SignedRequest();
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("request type cannot be null"));
+		}
+
+		signedRequest.setType(SignedRequest.Type.REQUEST);
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("key file cannot be null"));
+		}
+
+		signedRequest.setKeyFile(keyFile);
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("url cannot be null"));
+		}
+
+		signedRequest.setUrl(signedUrl);
+		signedRequest.setExpires(expiresDate);
+		signedRequest.setKeyId(keyPairId);
+		assertTrue(SignatureValidator.validateSignature(signedRequest));
+	}
+
+	@Test
+	public void shouldValidateParametersForSignedCookieWithCannedPolicy() throws Exception {
+		CloudFrontCookieSigner.CookiesForCannedPolicy cfcp = CloudFrontCookieSigner.getCookiesForCannedPolicy(null,
+			null, keyFile, testUrl, keyPairId, expiresDate);
+
+		SignedRequest signedRequest = new SignedRequest();
+		signedRequest.setType(SignedRequest.Type.COOKIE);
+		signedRequest.setKeyFile(keyFile);
+		signedRequest.setUrl(testUrl);
+
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("key id cannot be null"));
+		}
+
+		signedRequest.setKeyId(keyPairId);
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("either expires or policy must be set"));
+		}
+
+		signedRequest.setExpires(expiresDate);
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("signature cannot be null"));
+		}
+
+		signedRequest.setSignature(cfcp.getSignature().getValue());
+
+		assertTrue(SignatureValidator.validateSignature(signedRequest));
+	}
+
+	@Test
+	public void shouldValidateParametersForSignedCookieWithCustomPolicy() throws Exception {
+		CloudFrontCookieSigner.CookiesForCustomPolicy cfcp = CloudFrontCookieSigner.getCookiesForCustomPolicy(null,
+			null, keyFile, testUrl, keyPairId, expiresDate, null, null);
+
+		SignedRequest signedRequest = new SignedRequest();
+		signedRequest.setType(SignedRequest.Type.COOKIE);
+		signedRequest.setKeyFile(keyFile);
+		signedRequest.setUrl(testUrl);
+
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("key id cannot be null"));
+		}
+
+		signedRequest.setKeyId(keyPairId);
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("either expires or policy must be set"));
+		}
+
+		CFPolicy cfPolicy = new CFPolicy();
+		CFPolicyStatement cfPolicyStatement = new CFPolicyStatement();
+		cfPolicyStatement.setDateLessThan(expiresDate);
+		cfPolicyStatement.setResource(testUrl);
+		cfPolicy.addStatement(cfPolicyStatement);
+
+		signedRequest.setPolicy(cfPolicy);
+
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("signature cannot be null"));
+		}
+
+		signedRequest.setSignature(cfcp.getSignature().getValue());
+
+		assertTrue(SignatureValidator.validateSignature(signedRequest));
+	}
+
+	@Test
 	public void shouldNotBeAbleToSignWithBadPemKey() throws Exception {
-		String distributionDomain = "localhost";
 
 		String url = "http://localhost/test/url.html";
 
