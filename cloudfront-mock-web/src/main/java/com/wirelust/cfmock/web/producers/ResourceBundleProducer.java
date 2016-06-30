@@ -32,9 +32,13 @@ public class ResourceBundleProducer {
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		try (InputStream inputStream = classLoader.getResourceAsStream(name)) {
-			properties.load(inputStream);
-		} catch (IOException | NullPointerException e) {
-			LOGGER.error("error loading properties file", e);
+			if (inputStream == null) {
+				LOGGER.error("error loading properties file:" + name);
+			} else {
+				properties.load(inputStream);
+			}
+		} catch (IOException e) {
+			LOGGER.error("error loading properties file:" + name, e);
 		}
 		return properties;
 	}

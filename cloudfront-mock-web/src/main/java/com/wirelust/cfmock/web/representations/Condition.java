@@ -2,7 +2,6 @@ package com.wirelust.cfmock.web.representations;
 
 import java.util.Date;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.wirelust.cfmock.web.json.UnixTimestampDeserializer;

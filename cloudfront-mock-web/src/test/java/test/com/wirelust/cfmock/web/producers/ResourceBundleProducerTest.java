@@ -27,6 +27,10 @@ public class ResourceBundleProducerTest {
 	Properties defaultProperties;
 
 	@Inject
+	@ClasspathResource("defaults.properties")
+	Properties defaultProperties2;
+
+	@Inject
 	@ClasspathResource("invalid.properties")
 	Properties invalidProperties;
 
