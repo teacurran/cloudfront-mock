@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
  */
 public class PolicyHelperTest {
 
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss z");
 	ObjectMapper objectMapper;
 	ObjectReader objectReader;
 	Policy policy;
@@ -69,9 +69,9 @@ public class PolicyHelperTest {
 		CFPolicyStatement statement = cfPolicy.getStatements().get(0);
 		assertEquals("http*://*/web/content/*", statement.getResource());
 
-		assertEquals(DATE_FORMAT.parse("6/26/2016 14:45:00"), statement.getDateLessThan());
+		assertEquals(DATE_FORMAT.parse("6/26/2016 18:45:00 UTC"), statement.getDateLessThan());
 
-		assertEquals(DATE_FORMAT.parse("6/26/2016 13:45:00"), statement.getDateGreaterThan());
+		assertEquals(DATE_FORMAT.parse("6/26/2016 17:45:00 UTC"), statement.getDateGreaterThan());
 	}
 
 	@Test
