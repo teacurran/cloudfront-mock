@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class PolicyTest {
 
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss z");
 	ObjectMapper objectMapper;
 
 	@Before
@@ -41,8 +41,8 @@ public class PolicyTest {
 
 		Condition condition = statement.getCondition();
 
-		assertEquals(DATE_FORMAT.parse("6/26/2016 14:45:00"), condition.getDateLessThan().getDate());
+		assertEquals(DATE_FORMAT.parse("6/26/2016 18:45:00 GMT"), condition.getDateLessThan().getDate());
 
-		assertEquals(DATE_FORMAT.parse("6/26/2016 13:45:00"), condition.getDateGreaterThan().getDate());
+		assertEquals(DATE_FORMAT.parse("6/26/2016 17:45:00 GMT"), condition.getDateGreaterThan().getDate());
 	}
 }
