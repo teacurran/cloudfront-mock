@@ -21,7 +21,7 @@ public class DomainUtilTest {
 	 * coverage reports aren't diminished
 	 */
 	@Test
-	public void testConstantsConstructorIsPrivate() throws Exception {
+	public void testConstructorIsPrivate() throws Exception {
 		Constructor<DomainUtil> constructor = DomainUtil.class.getDeclaredConstructor();
 		assertTrue(Modifier.isPrivate(constructor.getModifiers()));
 		constructor.setAccessible(true);

@@ -2,14 +2,13 @@ package com.wirelust.cfmock.web.producers;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.util.Properties;
-import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 import com.wirelust.cfmock.web.qualifiers.ClasspathResource;
+import com.wirelust.cfmock.web.util.QualifierUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,7 @@ public class ResourceBundleProducer {
 	@Produces
 	@ClasspathResource("")
 	Properties loadPropertiesBundle(InjectionPoint injectionPoint) {
-		String name = getName(injectionPoint);
+		String name = QualifierUtil.getClasspathResourceValue(injectionPoint);
 
 		Properties properties = new Properties();
 
@@ -42,18 +41,5 @@ public class ResourceBundleProducer {
 		}
 		return properties;
 	}
-
-	private String getName(InjectionPoint ip) {
-		String name = null;
-		Set<Annotation> qualifiers = ip.getQualifiers();
-		for (Annotation qualifier : qualifiers) {
-			if (qualifier.annotationType().equals(ClasspathResource.class)) {
-				name = ((ClasspathResource) qualifier).value();
-				break;
-			}
-		}
-		return name;
-	}
-
 
 }
