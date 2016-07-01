@@ -15,6 +15,7 @@ import javax.validation.constraints.NotNull;
 import com.amazonaws.services.cloudfront.CloudFrontCookieSigner;
 import com.amazonaws.services.cloudfront.CloudFrontUrlSigner;
 import com.wirelust.cfmock.exceptions.CFMockException;
+import com.wirelust.cfmock.util.DomainUtil;
 import com.wirelust.cfmock.util.WildcardMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +32,6 @@ public class SignatureValidator {
     public static final String COOKIE_POLICY = "CloudFront-Policy";
     public static final String COOKIE_KEY_PAIR_ID = "CloudFront-Key-Pair-Id";
 
-	public static final String PROTOCOL_HTTP = "http";
-	public static final String PROTOCOL_HTTPS = "https";
 
 	private SignatureValidator() {
 		// static only class
@@ -62,7 +61,7 @@ public class SignatureValidator {
 			throw new CFMockException("Signature is expired");
 		}
 
-		String port = getPort(url);
+		String port = DomainUtil.getPortForUrl(url);
 
 		String urlToCheck = url.getProtocol() + "://" + url.getHost() + port + url.getPath();
 
@@ -202,15 +201,4 @@ public class SignatureValidator {
 		return queryPairs;
 	}
 
-	private static String getPort(URL url) {
-		if (url.getPort() == -1) {
-			return "";
-		}
-		String port = "";
-		if (url.getProtocol().equalsIgnoreCase(PROTOCOL_HTTP) && url.getPort() != 80
-				|| url.getProtocol().equalsIgnoreCase(PROTOCOL_HTTPS) && url.getPort() != 443) {
-			port = ":" + url.getPort();
-		}
-		return port;
-	}
 }

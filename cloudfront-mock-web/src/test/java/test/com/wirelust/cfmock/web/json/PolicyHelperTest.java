@@ -9,10 +9,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.wirelust.cfmock.CFPolicy;
 import com.wirelust.cfmock.CFPolicyStatement;
 import com.wirelust.cfmock.web.json.PolicyHelper;
-import com.wirelust.cfmock.web.representations.Condition;
 import com.wirelust.cfmock.web.representations.Policy;
-import com.wirelust.cfmock.web.representations.Statement;
-import com.wirelust.cfmock.web.util.DomainUtil;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -13,7 +13,6 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Qualifier;
 
 import com.wirelust.cfmock.web.qualifiers.ClasspathResource;
-import com.wirelust.cfmock.web.util.DomainUtil;
 import com.wirelust.cfmock.web.util.QualifierUtil;
 import org.junit.Test;
 

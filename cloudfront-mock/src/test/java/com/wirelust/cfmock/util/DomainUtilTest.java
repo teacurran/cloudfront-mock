@@ -1,9 +1,9 @@
-package test.com.wirelust.cfmock.web.util;
+package com.wirelust.cfmock.util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 
-import com.wirelust.cfmock.web.util.DomainUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -50,5 +50,15 @@ public class DomainUtilTest {
 	public void shouldMatchIoDomain() {
 		assertEquals("wirelust.io", DomainUtil.getTopLevelDomain("www.wirelust.io"));
 		assertEquals("wirelust.io", DomainUtil.getTopLevelDomain("third.www.wirelust.io"));
+	}
+
+	@Test
+	public void shouldBeAbleToGetPortForUrl() throws Exception {
+		assertEquals("", DomainUtil.getPortForUrl(new URL("http://www.wirelust.com/")));
+		assertEquals("", DomainUtil.getPortForUrl(new URL("https://www.wirelust.com/")));
+		assertEquals("", DomainUtil.getPortForUrl(new URL("http://www.wirelust.com:80/")));
+		assertEquals("", DomainUtil.getPortForUrl(new URL("https://www.wirelust.com:443/")));
+		assertEquals(":8080", DomainUtil.getPortForUrl(new URL("http://www.wirelust.com:8080/")));
+		assertEquals(":8443", DomainUtil.getPortForUrl(new URL("https://www.wirelust.com:8443/")));
 	}
 }

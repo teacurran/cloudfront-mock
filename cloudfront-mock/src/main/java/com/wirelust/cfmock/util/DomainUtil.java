@@ -1,5 +1,6 @@
-package com.wirelust.cfmock.web.util;
+package com.wirelust.cfmock.util;
 
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -7,11 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Date: 25-Jun-2016
+ * Date: 30-Jun-2016
  *
  * @author T. Curran
  */
 public class DomainUtil {
+
+	public static final String PROTOCOL_HTTP = "http";
+	public static final String PROTOCOL_HTTPS = "https";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DomainUtil.class);
 
@@ -31,4 +35,15 @@ public class DomainUtil {
 		return fullDomain;
 	}
 
+	public static String getPortForUrl(URL url) {
+		if (url.getPort() == -1) {
+			return "";
+		}
+		String port = "";
+		if (url.getProtocol().equalsIgnoreCase(PROTOCOL_HTTP) && url.getPort() != 80
+				|| url.getProtocol().equalsIgnoreCase(PROTOCOL_HTTPS) && url.getPort() != 443) {
+			port = ":" + url.getPort();
+		}
+		return port;
+	}
 }
