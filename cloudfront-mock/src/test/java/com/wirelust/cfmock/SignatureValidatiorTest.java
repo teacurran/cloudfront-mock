@@ -12,7 +12,6 @@ import java.util.Map;
 
 import com.amazonaws.services.cloudfront.CloudFrontCookieSigner;
 import com.amazonaws.services.cloudfront.CloudFrontUrlSigner;
-import com.amazonaws.services.cloudfront.util.SignerUtils;
 import com.wirelust.cfmock.exceptions.CFMockException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -169,8 +168,6 @@ public class SignatureValidatiorTest {
 		CFPolicyStatement cfPolicyStatement = new CFPolicyStatement();
 		cfPolicyStatement.setDateLessThan(expiresDate);
 		cfPolicyStatement.setResource(testUrl);
-		cfPolicy.addStatement(cfPolicyStatement);
-
 		signedRequest.setPolicy(cfPolicy);
 
 		try {
@@ -182,7 +179,82 @@ public class SignatureValidatiorTest {
 
 		signedRequest.setSignature(cfcp.getSignature().getValue());
 
+		// no statement
+		cfPolicy.setStatements(null);
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("Only one policy statement supported"));
+		}
+
+		cfPolicy.addStatement(cfPolicyStatement);
+		cfPolicy.addStatement(cfPolicyStatement);
+
+		// two statements
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("Only one policy statement supported"));
+		}
+
+		cfPolicy.setStatements(null);
+		cfPolicy.addStatement(cfPolicyStatement);
+
+		cfPolicyStatement.setDateGreaterThan(new Date(new Date().getTime() + 20000));
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("Signature is not valid until"));
+		}
+		cfPolicyStatement.setDateGreaterThan(null);
+
+		cfPolicyStatement.setDateLessThan(null);
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("Signature is expired"));
+		}
+
+		cfPolicyStatement.setDateLessThan(new Date(new Date().getTime() - 20000));
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("Signature is expired"));
+		}
+		cfPolicyStatement.setDateGreaterThan(null);
+
+		cfPolicyStatement.setDateLessThan(expiresDate);
 		assertTrue(SignatureValidator.validateSignature(signedRequest));
+	}
+
+	@Test
+	public void shouldBeAbleToMatchWildCard() throws Exception {
+
+		CFPolicy cfPolicy = new CFPolicy();
+		CFPolicyStatement statement = new CFPolicyStatement();
+		statement.setDateLessThan(expiresDate);
+		statement.setResource("http*://localhost/*");
+		cfPolicy.addStatement(statement);
+
+		CloudFrontCookieSigner.CookiesForCustomPolicy cookiesForCustomPolicy = CloudFrontCookieSigner
+			.getCookiesForCustomPolicy(null, null, keyFile, statement.getResource(), keyPairId,
+				statement.getDateLessThan(), statement.getDateGreaterThan(), null);
+		String signature = cookiesForCustomPolicy.getSignature().getValue();
+
+		assertTrue(SignatureValidator.validateSignature("http://localhost/1234", keyFile, keyPairId, cfPolicy,
+			signature));
+
+		assertTrue(SignatureValidator.validateSignature("https://localhost/1234", keyFile, keyPairId, cfPolicy,
+			signature));
+
+		assertFalse(SignatureValidator.validateSignature("http://google.com/1234", keyFile, keyPairId, cfPolicy,
+			signature));
+
 	}
 
 	@Test

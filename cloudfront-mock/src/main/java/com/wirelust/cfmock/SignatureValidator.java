@@ -182,7 +182,7 @@ public class SignatureValidator {
 	}
 
 	private static void checkForValidPolicy(@NotNull final CFPolicy policy) {
-		if (policy.getStatements() == null || policy.getStatements().size() > 1) {
+		if (policy.getStatements().isEmpty() || policy.getStatements().size() > 1) {
 			throw new CFMockException("Only one policy statement supported at this time");
 		}
 
