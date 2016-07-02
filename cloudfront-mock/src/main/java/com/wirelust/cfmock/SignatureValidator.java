@@ -58,7 +58,7 @@ public class SignatureValidator {
 
 		Date now = new Date();
 		if (now.getTime() > expires.getTime()) {
-			throw new CFMockException("Signature is expired");
+			throw new CFMockException(Constants.SIGNATURE_IS_EXPIRED);
 		}
 
 		String port = DomainUtil.getPortForUrl(url);
@@ -111,9 +111,8 @@ public class SignatureValidator {
 											@NotNull final String signature) {
 		try {
 
-		if (policy.getStatements() == null || policy.getStatements().size() > 1) {
-			throw new CFMockException("Only one policy statement supported at this time");
-		}
+
+		checkForValidPolicy(policy);
 
 		CFPolicyStatement statement = policy.getStatements().get(0);
 
@@ -124,7 +123,7 @@ public class SignatureValidator {
 
 		CloudFrontCookieSigner.CookiesForCustomPolicy cookiesForCustomPolicy =
 			CloudFrontCookieSigner.getCookiesForCustomPolicy(null, null, keyFile,
-				statement.getResource(), keyId, statement.dateLessThan, statement.getDateGreaterThan(), null);
+				statement.getResource(), keyId, statement.getDateLessThan(), statement.getDateGreaterThan(), null);
 
 			return signature.equals(cookiesForCustomPolicy.getSignature().getValue());
 		} catch (InvalidKeySpecException | IOException e) {
@@ -179,6 +178,23 @@ public class SignatureValidator {
 		}
 		if (signedRequest.getSignature() == null) {
 			throw new CFMockException("signature cannot be null for cookie based signatures");
+		}
+	}
+
+	private static void checkForValidPolicy(@NotNull final CFPolicy policy) {
+		if (policy.getStatements() == null || policy.getStatements().size() > 1) {
+			throw new CFMockException("Only one policy statement supported at this time");
+		}
+
+		CFPolicyStatement statement = policy.getStatements().get(0);
+
+		Date now = new Date();
+		if (statement.getDateLessThan() == null || statement.getDateLessThan().getTime() < now.getTime()) {
+			throw new CFMockException(Constants.SIGNATURE_IS_EXPIRED);
+		}
+
+		if (statement.getDateGreaterThan() != null && statement.getDateGreaterThan().getTime() > now.getTime()) {
+			throw new CFMockException(String.format(Constants.SIGNATURE_VALID_AT, statement.getDateGreaterThan()));
 		}
 	}
 
