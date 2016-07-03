@@ -43,7 +43,7 @@ Mock server for AWS Cloudfront signed url testing or for local hosting
 
 |Signed Cookie
 |Custom Policy - Begin Time
-|TODO
+|Done
 
 |Signed Cookie
 |Custom Policy - IP restriction
@@ -51,7 +51,7 @@ Mock server for AWS Cloudfront signed url testing or for local hosting
 
 |Signed Cookie
 |Custom Policy - Base64 Encoding
-|TODO
+|Done
 
 |===
 
