@@ -21,6 +21,7 @@ public class SignedRequest {
 	Date expires;
 	String signature;
 	CFPolicy policy;
+	String remoteIpAddress;
 
 	public Type getType() {
 		return type;
@@ -76,5 +77,13 @@ public class SignedRequest {
 
 	public void setPolicy(CFPolicy policy) {
 		this.policy = policy;
+	}
+
+	public String getRemoteIpAddress() {
+		return remoteIpAddress;
+	}
+
+	public void setRemoteIpAddress(String remoteIpAddress) {
+		this.remoteIpAddress = remoteIpAddress;
 	}
 }

@@ -52,6 +52,9 @@ public class PolicyHelper {
 			if (condition.getDateGreaterThan() != null) {
 				cfPolicyStatement.setDateGreaterThan(condition.getDateGreaterThan().getDate());
 			}
+			if (condition.getIpAddress() != null) {
+				cfPolicyStatement.setIpAddress(condition.getIpAddress().getValue());
+			}
 		}
 		return cfPolicyStatement;
 	}

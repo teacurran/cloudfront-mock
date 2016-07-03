@@ -19,6 +19,9 @@ public class Condition {
 	@JsonProperty("DateGreaterThan")
 	DateGreaterThan dateGreaterThan;
 
+	@JsonProperty("IpAddress")
+	IPAddress ipAddress;
+
 	public DateLessThan getDateLessThan() {
 		return dateLessThan;
 	}
@@ -33,6 +36,14 @@ public class Condition {
 
 	public void setDateGreaterThan(DateGreaterThan dateGreaterThan) {
 		this.dateGreaterThan = dateGreaterThan;
+	}
+
+	public IPAddress getIpAddress() {
+		return ipAddress;
+	}
+
+	public void setIpAddress(IPAddress ipAddress) {
+		this.ipAddress = ipAddress;
 	}
 
 	public class DateLessThan {
@@ -62,4 +73,18 @@ public class Condition {
 			this.date = date;
 		}
 	}
+
+	public class IPAddress {
+		@JsonProperty("AWS:SourceIp")
+		String value;
+
+		public String getValue() {
+			return value;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
+	}
+
 }

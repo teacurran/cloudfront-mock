@@ -165,6 +165,12 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 
 			Policy policy = objectReader.readValue(policyJson);
 			signedRequest.setPolicy(PolicyHelper.toCfPolicy(policy));
+
+			String ipAddress = request.getHeader("X-FORWARDED-FOR");
+			if (ipAddress == null) {
+				ipAddress = request.getRemoteAddr();
+			}
+			signedRequest.setRemoteIpAddress(ipAddress);
 		} catch (IOException e) {
 			throw new ServiceException("unable to decode policyBase64:" + policyBase64, e);
 		}

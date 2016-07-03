@@ -12,6 +12,7 @@ public class CFPolicyStatement {
 	String resource;
 	Date dateLessThan;
 	Date dateGreaterThan;
+	String ipAddress;
 
 	public String getResource() {
 		return resource;
@@ -35,5 +36,13 @@ public class CFPolicyStatement {
 
 	public void setDateGreaterThan(Date dateGreaterThan) {
 		this.dateGreaterThan = dateGreaterThan;
+	}
+
+	public String getIpAddress() {
+		return ipAddress;
+	}
+
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
 	}
 }
