@@ -67,11 +67,12 @@ public class SignatureValidatiorTest {
 	}
 
 	@Test
-	public void shouldValidateParametersRorSignedRequest() throws Exception {
+	public void shouldValidateParametersForSignedRequest() throws Exception {
 		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(null,
 			null, keyFile, testUrl, keyPairId, expiresDate);
 
 		SignedRequest signedRequest = new SignedRequest();
+		signedRequest.setType(null);
 		try {
 			SignatureValidator.validateSignature(signedRequest);
 			Assert.fail();
@@ -88,13 +89,6 @@ public class SignatureValidatiorTest {
 		}
 
 		signedRequest.setKeyFile(keyFile);
-		try {
-			SignatureValidator.validateSignature(signedRequest);
-			Assert.fail();
-		} catch (CFMockException e) {
-			assertTrue(e.getMessage().contains("url cannot be null"));
-		}
-
 		signedRequest.setUrl(signedUrl);
 		signedRequest.setExpires(expiresDate);
 		signedRequest.setKeyId(keyPairId);
@@ -254,7 +248,52 @@ public class SignatureValidatiorTest {
 
 		assertFalse(SignatureValidator.validateSignature("http://google.com/1234", keyFile, keyPairId, cfPolicy,
 			signature));
+	}
 
+	@Test
+	public void shouldBeAbleToMatchIPAddress() throws Exception {
+
+		CloudFrontCookieSigner.CookiesForCustomPolicy cfcp = CloudFrontCookieSigner.getCookiesForCustomPolicy(null,
+			null, keyFile, null, keyPairId, expiresDate, null, null);
+
+
+		CFPolicy cfPolicy = new CFPolicy();
+		CFPolicyStatement statement = new CFPolicyStatement();
+		statement.setDateLessThan(expiresDate);
+		statement.setIpAddress("192.0.2.0/24");
+		cfPolicy.addStatement(statement);
+
+		SignedRequest signedRequest = new SignedRequest();
+		signedRequest.setKeyFile(keyFile);
+		signedRequest.setKeyId(keyPairId);
+		signedRequest.setRemoteIpAddress("192.0.2.34");
+		signedRequest.setPolicy(cfPolicy);
+		signedRequest.setSignature(cfcp.getSignature().getValue());
+
+		assertTrue(SignatureValidator.validateSignature(signedRequest));
+	}
+
+	@Test
+	public void shouldNotBeAbleToMatchIPAddress() throws Exception {
+
+		CloudFrontCookieSigner.CookiesForCustomPolicy cfcp = CloudFrontCookieSigner.getCookiesForCustomPolicy(null,
+			null, keyFile, null, keyPairId, expiresDate, null, null);
+
+
+		CFPolicy cfPolicy = new CFPolicy();
+		CFPolicyStatement statement = new CFPolicyStatement();
+		statement.setDateLessThan(expiresDate);
+		statement.setIpAddress("192.0.2.0/24");
+		cfPolicy.addStatement(statement);
+
+		SignedRequest signedRequest = new SignedRequest();
+		signedRequest.setKeyFile(keyFile);
+		signedRequest.setKeyId(keyPairId);
+		signedRequest.setRemoteIpAddress("10.10.10.10");
+		signedRequest.setPolicy(cfPolicy);
+		signedRequest.setSignature(cfcp.getSignature().getValue());
+
+		assertFalse(SignatureValidator.validateSignature(signedRequest));
 	}
 
 	@Test

@@ -116,7 +116,7 @@ public class SignatureValidator {
 
 		CFPolicyStatement statement = policy.getStatements().get(0);
 
-		if (!WildcardMatcher.matches(url, statement.getResource())) {
+		if (statement.getResource() != null && !WildcardMatcher.matches(url, statement.getResource())) {
 			LOGGER.debug("url:{} does not match:{}", url, statement.getResource());
 			return false;
 		}
@@ -160,9 +160,6 @@ public class SignatureValidator {
 		}
 		if (signedRequest.getKeyFile() == null) {
 			throw new CFMockException("key file cannot be null");
-		}
-		if (signedRequest.getUrl() == null) {
-			throw new CFMockException("url cannot be null");
 		}
 		if (signedRequest.getType() == SignedRequest.Type.COOKIE) {
 			checkForCookieNulls(signedRequest);

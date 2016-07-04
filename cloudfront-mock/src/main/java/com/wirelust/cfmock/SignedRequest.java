@@ -14,7 +14,7 @@ public class SignedRequest {
 		REQUEST, COOKIE
 	}
 
-	Type type;
+	Type type = Type.COOKIE;
 	String keyId;
 	File keyFile;
 	String url;
