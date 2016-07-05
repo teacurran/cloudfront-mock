@@ -41,8 +41,28 @@ public class PolicyTest {
 
 		Condition condition = statement.getCondition();
 
-		assertEquals(DATE_FORMAT.parse("6/26/2016 18:45:00 GMT"), condition.getDateLessThan().getDate());
+		assertEquals(DATE_FORMAT.parse("6/26/2016 18:45:00 GMT"), condition.getDateLessThan().getValue());
 
-		assertEquals(DATE_FORMAT.parse("6/26/2016 17:45:00 GMT"), condition.getDateGreaterThan().getDate());
+		assertEquals(DATE_FORMAT.parse("6/26/2016 17:45:00 GMT"), condition.getDateGreaterThan().getValue());
 	}
+
+	@Test
+	public void shouldBeAbleToDeserializePolicyWithIpAddress() throws Exception {
+
+		ObjectReader objectReader = objectMapper.readerFor(Policy.class);
+		Policy policy = objectReader.readValue(
+			getClass().getClassLoader().getResourceAsStream("representations/custom_policy_with_ip.json"));
+
+		assertEquals(1, policy.getStatements().size());
+
+		Statement statement = policy.getStatements().get(0);
+		assertEquals("http*://*/web/content/*", statement.getResource());
+
+		Condition condition = statement.getCondition();
+
+		assertEquals(DATE_FORMAT.parse("6/26/2016 18:45:00 GMT"), condition.getDateLessThan().getValue());
+		assertEquals(DATE_FORMAT.parse("6/26/2016 17:45:00 GMT"), condition.getDateGreaterThan().getValue());
+		assertEquals("192.0.2.0/24", condition.getIpAddress().getValue());
+	}
+
 }

@@ -34,7 +34,7 @@ public class PolicyHelperTest {
 		objectReader = objectMapper.readerFor(Policy.class);
 
 		policy = objectReader.readValue(
-			getClass().getClassLoader().getResourceAsStream("representations/custom_policy.json"));
+			getClass().getClassLoader().getResourceAsStream("representations/custom_policy_with_ip.json"));
 
 	}
 
@@ -82,4 +82,16 @@ public class PolicyHelperTest {
 		assertEquals(0, cfPolicy.getStatements().size());
 	}
 
+	@Test
+	public void shouldBeAbleToConvertToCfPolicyWithNullConditions() throws Exception {
+
+		policy.getStatements().get(0).setCondition(null);
+
+		CFPolicy cfPolicy = PolicyHelper.toCfPolicy(policy);
+
+		assertEquals(1, cfPolicy.getStatements().size());
+
+		CFPolicyStatement statement = cfPolicy.getStatements().get(0);
+		assertNull(statement.getIpAddress());
+	}
 }

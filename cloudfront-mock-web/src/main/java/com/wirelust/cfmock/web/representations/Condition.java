@@ -49,28 +49,28 @@ public class Condition {
 	public class DateLessThan {
 		@JsonProperty("AWS:EpochTime")
 		@JsonDeserialize(using = UnixTimestampDeserializer.class)
-		Date date;
+		Date value;
 
-		public Date getDate() {
-			return date;
+		public Date getValue() {
+			return value;
 		}
 
-		public void setDate(Date date) {
-			this.date = date;
+		public void setValue(Date value) {
+			this.value = value;
 		}
 	}
 
 	public class DateGreaterThan {
 		@JsonProperty("AWS:EpochTime")
 		@JsonDeserialize(using = UnixTimestampDeserializer.class)
-		Date date;
+		Date value;
 
-		public Date getDate() {
-			return date;
+		public Date getValue() {
+			return value;
 		}
 
-		public void setDate(Date date) {
-			this.date = date;
+		public void setValue(Date value) {
+			this.value = value;
 		}
 	}
 

@@ -1,0 +1,18 @@
+{
+	"Statement": [
+		{
+			"Resource": "http*://*/web/content/*",
+			"Condition": {
+				"DateLessThan": {
+					"AWS:EpochTime": 1466966700
+				},
+				"DateGreaterThan": {
+					"AWS:EpochTime": 1466963100
+				},
+				"IpAddress": {
+					"AWS:SourceIp": "192.0.2.0/24"
+				}
+			}
+		}
+	]
+}

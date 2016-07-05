@@ -47,10 +47,10 @@ public class PolicyHelper {
 		Condition condition = statement.getCondition();
 		if (condition != null) {
 			if (condition.getDateLessThan() != null) {
-				cfPolicyStatement.setDateLessThan(condition.getDateLessThan().getDate());
+				cfPolicyStatement.setDateLessThan(condition.getDateLessThan().getValue());
 			}
 			if (condition.getDateGreaterThan() != null) {
-				cfPolicyStatement.setDateGreaterThan(condition.getDateGreaterThan().getDate());
+				cfPolicyStatement.setDateGreaterThan(condition.getDateGreaterThan().getValue());
 			}
 			if (condition.getIpAddress() != null) {
 				cfPolicyStatement.setIpAddress(condition.getIpAddress().getValue());
