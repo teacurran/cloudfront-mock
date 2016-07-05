@@ -10,6 +10,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.validation.constraints.NotNull;
 
 import com.amazonaws.services.cloudfront.CloudFrontCookieSigner;
@@ -22,16 +24,17 @@ import org.slf4j.LoggerFactory;
 
 public class SignatureValidator {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SignatureValidator.class);
 
 	public static final String PARAM_EXPIRES = "Expires";
 	public static final String PARAM_KEY_PAIR_ID = "Key-Pair-Id";
 
-    public static final String COOKIE_EXPIRES = "CloudFront-Expires";
-    public static final String COOKIE_SIGNATURE = "CloudFront-Signature";
-    public static final String COOKIE_POLICY = "CloudFront-Policy";
-    public static final String COOKIE_KEY_PAIR_ID = "CloudFront-Key-Pair-Id";
+	public static final String COOKIE_EXPIRES = "CloudFront-Expires";
+	public static final String COOKIE_SIGNATURE = "CloudFront-Signature";
+	public static final String COOKIE_POLICY = "CloudFront-Policy";
+	public static final String COOKIE_KEY_PAIR_ID = "CloudFront-Key-Pair-Id";
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(SignatureValidator.class);
+	private static final Pattern CIDR = Pattern.compile("(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,3})");
 
 	private SignatureValidator() {
 		// static only class
@@ -112,9 +115,12 @@ public class SignatureValidator {
 		try {
 
 
-		checkForValidPolicy(policy);
+		if (policy.getStatements().isEmpty() || policy.getStatements().size() > 1) {
+			throw new CFMockException("Only one policy statement supported at this time");
+		}
 
 		CFPolicyStatement statement = policy.getStatements().get(0);
+		validateStatement(statement);
 
 		if (statement.getResource() != null && !WildcardMatcher.matches(url, statement.getResource())) {
 			LOGGER.debug("url:{} does not match:{}", url, statement.getResource());
@@ -178,12 +184,14 @@ public class SignatureValidator {
 		}
 	}
 
-	private static void checkForValidPolicy(@NotNull final CFPolicy policy) {
-		if (policy.getStatements().isEmpty() || policy.getStatements().size() > 1) {
-			throw new CFMockException("Only one policy statement supported at this time");
-		}
+	private static void validateStatement(@NotNull final CFPolicyStatement statement) {
 
-		CFPolicyStatement statement = policy.getStatements().get(0);
+		if (statement.getIpAddress() != null) {
+			Matcher matcher = CIDR.matcher(statement.getIpAddress());
+			if (!matcher.matches()) {
+				throw new CFMockException("Statement IP Address format invalid");
+			}
+		}
 
 		Date now = new Date();
 		if (statement.getDateLessThan() == null || statement.getDateLessThan().getTime() < now.getTime()) {
