@@ -77,7 +77,7 @@ public class SignatureValidatiorTest {
 			SignatureValidator.validateSignature(signedRequest);
 			Assert.fail();
 		} catch (CFMockException e) {
-			assertTrue(e.getMessage().contains("request type cannot be null"));
+			assertTrue(e.getMessage().contains("type may not be null"));
 		}
 
 		signedRequest.setType(SignedRequest.Type.REQUEST);
@@ -85,7 +85,7 @@ public class SignatureValidatiorTest {
 			SignatureValidator.validateSignature(signedRequest);
 			Assert.fail();
 		} catch (CFMockException e) {
-			assertTrue(e.getMessage().contains("key file cannot be null"));
+			assertTrue(e.getMessage().contains("keyFile may not be null"));
 		}
 
 		signedRequest.setKeyFile(keyFile);
@@ -240,14 +240,42 @@ public class SignatureValidatiorTest {
 				statement.getDateLessThan(), statement.getDateGreaterThan(), null);
 		String signature = cookiesForCustomPolicy.getSignature().getValue();
 
-		assertTrue(SignatureValidator.validateSignature("http://localhost/1234", keyFile, keyPairId, cfPolicy,
+		assertTrue(SignatureValidator.validateSignature("http://localhost/1234", null, keyFile, keyPairId, cfPolicy,
 			signature));
 
-		assertTrue(SignatureValidator.validateSignature("https://localhost/1234", keyFile, keyPairId, cfPolicy,
+		assertTrue(SignatureValidator.validateSignature("https://localhost/1234", null, keyFile, keyPairId, cfPolicy,
 			signature));
 
-		assertFalse(SignatureValidator.validateSignature("http://google.com/1234", keyFile, keyPairId, cfPolicy,
+		assertFalse(SignatureValidator.validateSignature("http://google.com/1234", null, keyFile, keyPairId, cfPolicy,
 			signature));
+	}
+
+	@Test
+	public void shouldFailWithBadIPAddress() throws Exception {
+
+		CloudFrontCookieSigner.CookiesForCustomPolicy cfcp = CloudFrontCookieSigner.getCookiesForCustomPolicy(null,
+			null, keyFile, null, keyPairId, expiresDate, null, null);
+
+
+		CFPolicy cfPolicy = new CFPolicy();
+		CFPolicyStatement statement = new CFPolicyStatement();
+		statement.setDateLessThan(expiresDate);
+		statement.setIpAddress("192.0.2.D/24");
+		cfPolicy.addStatement(statement);
+
+		SignedRequest signedRequest = new SignedRequest();
+		signedRequest.setKeyFile(keyFile);
+		signedRequest.setKeyId(keyPairId);
+		signedRequest.setRemoteIpAddress("192.0.2.34");
+		signedRequest.setPolicy(cfPolicy);
+		signedRequest.setSignature(cfcp.getSignature().getValue());
+
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("ipAddress must match"));
+		}
 	}
 
 	@Test

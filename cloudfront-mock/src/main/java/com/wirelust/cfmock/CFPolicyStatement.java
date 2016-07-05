@@ -1,6 +1,7 @@
 package com.wirelust.cfmock;
 
 import java.util.Date;
+import javax.validation.constraints.Pattern;
 
 /**
  * Date: 26-Jun-2016
@@ -12,6 +13,8 @@ public class CFPolicyStatement {
 	String resource;
 	Date dateLessThan;
 	Date dateGreaterThan;
+
+	@Pattern(regexp = "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,3})")
 	String ipAddress;
 
 	public String getResource() {

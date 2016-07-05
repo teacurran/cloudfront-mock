@@ -10,8 +10,11 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.validation.constraints.NotNull;
 
 import com.amazonaws.services.cloudfront.CloudFrontCookieSigner;
@@ -19,6 +22,7 @@ import com.amazonaws.services.cloudfront.CloudFrontUrlSigner;
 import com.wirelust.cfmock.exceptions.CFMockException;
 import com.wirelust.cfmock.util.DomainUtil;
 import com.wirelust.cfmock.util.WildcardMatcher;
+import org.apache.commons.net.util.SubnetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +38,9 @@ public class SignatureValidator {
 	public static final String COOKIE_KEY_PAIR_ID = "CloudFront-Key-Pair-Id";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SignatureValidator.class);
-	private static final Pattern CIDR = Pattern.compile("(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,3})");
+
+	private static final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+	private static final Validator validator = factory.getValidator();
 
 	private SignatureValidator() {
 		// static only class
@@ -108,6 +114,7 @@ public class SignatureValidator {
 	}
 
 	public static boolean validateSignature(@NotNull final String url,
+											@NotNull final String remoteIp,
 											@NotNull final File keyFile,
 											@NotNull final String keyId,
 											@NotNull final CFPolicy policy,
@@ -121,6 +128,13 @@ public class SignatureValidator {
 
 		CFPolicyStatement statement = policy.getStatements().get(0);
 		validateStatement(statement);
+
+		if (statement.getIpAddress() != null) {
+			SubnetUtils subnetUtils = new SubnetUtils(statement.getIpAddress());
+			if (!subnetUtils.getInfo().isInRange(remoteIp)) {
+				return false;
+			}
+		}
 
 		if (statement.getResource() != null && !WildcardMatcher.matches(url, statement.getResource())) {
 			LOGGER.debug("url:{} does not match:{}", url, statement.getResource());
@@ -152,6 +166,7 @@ public class SignatureValidator {
 					signedRequest.getSignature());
 			} else {
 				return validateSignature(signedRequest.getUrl(),
+					signedRequest.getRemoteIpAddress(),
 					signedRequest.getKeyFile(),
 					signedRequest.getKeyId(),
 					signedRequest.getPolicy(),
@@ -161,11 +176,9 @@ public class SignatureValidator {
 	}
 
 	private static void checkForNulls(@NotNull final SignedRequest signedRequest) {
-		if (signedRequest.getType() == null) {
-			throw new CFMockException("request type cannot be null");
-		}
-		if (signedRequest.getKeyFile() == null) {
-			throw new CFMockException("key file cannot be null");
+		Set<ConstraintViolation<SignedRequest>> violations = validator.validate(signedRequest);
+		if (!violations.isEmpty()) {
+			throw new CFMockException("Error validating signed request. errors: " + buildValidationError(violations));
 		}
 		if (signedRequest.getType() == SignedRequest.Type.COOKIE) {
 			checkForCookieNulls(signedRequest);
@@ -186,12 +199,7 @@ public class SignatureValidator {
 
 	private static void validateStatement(@NotNull final CFPolicyStatement statement) {
 
-		if (statement.getIpAddress() != null) {
-			Matcher matcher = CIDR.matcher(statement.getIpAddress());
-			if (!matcher.matches()) {
-				throw new CFMockException("Statement IP Address format invalid");
-			}
-		}
+		validateParameters(statement);
 
 		Date now = new Date();
 		if (statement.getDateLessThan() == null || statement.getDateLessThan().getTime() < now.getTime()) {
@@ -220,6 +228,25 @@ public class SignatureValidator {
 			}
 		}
 		return queryPairs;
+	}
+
+	private static <T> void validateParameters(T object) {
+		Set<ConstraintViolation<T>> violations = validator.validate(object);
+		if (!violations.isEmpty()) {
+			throw new CFMockException("Error validating policy. errors: " + buildValidationError(violations));
+		}
+	}
+
+	private static <T> String buildValidationError(Set<ConstraintViolation<T>> violations) {
+		StringBuilder errors = new StringBuilder();
+		for (ConstraintViolation<T> violation : violations) {
+			if (errors.length() > 0) {
+				errors.append(", ");
+			}
+			errors.append(violation.getPropertyPath())
+				.append(" ").append(violation.getMessage());
+		}
+		return errors.toString();
 	}
 
 }

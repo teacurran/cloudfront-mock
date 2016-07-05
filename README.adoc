@@ -47,7 +47,7 @@ Mock server for AWS Cloudfront signed url testing or for local hosting
 
 |Signed Cookie
 |Custom Policy - IP restriction
-|TODO
+|Done
 
 |Signed Cookie
 |Custom Policy - Base64 Encoding

@@ -2,6 +2,8 @@ package com.wirelust.cfmock;
 
 import java.io.File;
 import java.util.Date;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 /**
  * Date: 23-Jun-2016
@@ -14,13 +16,19 @@ public class SignedRequest {
 		REQUEST, COOKIE
 	}
 
+	@NotNull
 	Type type = Type.COOKIE;
+
 	String keyId;
+
+	@NotNull
 	File keyFile;
 	String url;
 	Date expires;
 	String signature;
 	CFPolicy policy;
+
+	@Pattern(regexp = "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})")
 	String remoteIpAddress;
 
 	public Type getType() {
