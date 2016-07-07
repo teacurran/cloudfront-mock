@@ -19,12 +19,15 @@ public class SignedRequest {
 	@NotNull
 	Type type = Type.COOKIE;
 
+	@NotNull
 	String keyId;
 
 	@NotNull
 	File keyFile;
 	String url;
 	Date expires;
+
+	@NotNull
 	String signature;
 	CFPolicy policy;
 

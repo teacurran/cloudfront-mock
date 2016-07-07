@@ -7,7 +7,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.amazonaws.services.cloudfront.CloudFrontCookieSigner;
@@ -48,7 +50,9 @@ public class SignatureValidatiorTest {
 		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(null,
 			null, keyFile, testUrl, keyPairId, expiresDate);
 
-		assertTrue(SignatureValidator.validateSignedUrl(keyFile, signedUrl));
+		String signature = getQueryParam(signedUrl, SignatureValidator.PARAM_SIGNATURE);
+
+		assertTrue(SignatureValidator.validateSignature(testUrl, keyFile, keyPairId, expiresDate, signature));
 	}
 
 	@Test
@@ -56,20 +60,41 @@ public class SignatureValidatiorTest {
 		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(null,
 			null, keyFile, testUrl, keyPairId, expiresDate);
 
+		String signature = getQueryParam(signedUrl, SignatureValidator.PARAM_SIGNATURE);
+
 		SignedRequest signedRequest = new SignedRequest();
 		signedRequest.setType(SignedRequest.Type.REQUEST);
 		signedRequest.setUrl(signedUrl);
 		signedRequest.setExpires(expiresDate);
 		signedRequest.setKeyFile(keyFile);
 		signedRequest.setKeyId(keyPairId);
+		signedRequest.setSignature(signature);
 
 		assertTrue(SignatureValidator.validateSignature(signedRequest));
 	}
 
 	@Test
+	public void shouldBeAbleToValidateSignedURLWithCustomPolicy() throws Exception {
+		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCustomPolicy(null,
+			null, keyFile, testUrl, keyPairId, expiresDate, null, null);
+
+		String signature = getQueryParam(signedUrl, SignatureValidator.PARAM_SIGNATURE);
+
+		CFPolicy policy = new CFPolicy();
+		CFPolicyStatement statement = new CFPolicyStatement();
+		statement.setDateLessThan(expiresDate);
+		policy.addStatement(statement);
+
+		assertTrue(SignatureValidator.validateSignature(testUrl, null, keyFile, keyPairId, policy, signature));
+	}
+
+
+	@Test
 	public void shouldValidateParametersForSignedRequest() throws Exception {
 		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(null,
 			null, keyFile, testUrl, keyPairId, expiresDate);
+
+		String signature = getQueryParam(signedUrl, SignatureValidator.PARAM_SIGNATURE);
 
 		SignedRequest signedRequest = new SignedRequest();
 		signedRequest.setType(null);
@@ -92,6 +117,7 @@ public class SignatureValidatiorTest {
 		signedRequest.setUrl(signedUrl);
 		signedRequest.setExpires(expiresDate);
 		signedRequest.setKeyId(keyPairId);
+		signedRequest.setSignature(signature);
 		assertTrue(SignatureValidator.validateSignature(signedRequest));
 	}
 
@@ -325,61 +351,21 @@ public class SignatureValidatiorTest {
 	}
 
 	@Test
-	public void shouldNotBeAbleToSignWithBadPemKey() throws Exception {
-
-		String url = "http://localhost/test/url.html";
-
-		Date expiresDate = new Date(new Date().getTime() + EXPIRES_IN);
-
-		String signedUrl = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(null, null, keyFile, url, keyPairId,
-			expiresDate);
-
-		try {
-			SignatureValidator.validateSignedUrl(new File("/file/does/not/exist.pem"), signedUrl);
-
-			fail();
-		} catch (CFMockException e) {
-			assertTrue(e.getCause() instanceof FileNotFoundException);
-		}
-	}
-
-	@Test
-	public void shouldNotAcceptMalformedUrl() {
-		try {
-			SignatureValidator.validateSignedUrl(keyFile, "bad URL");
-
-			fail();
-		} catch (CFMockException e) {
-			assertTrue(e.getCause() instanceof MalformedURLException);
-		}
-	}
-
-	@Test
 	public void shouldNotAcceptExpiredToken() {
 		try {
 			long expires = new Date().getTime()/1000 - 2000;
-			SignatureValidator.validateSignedUrl(keyFile, "http://localhost/test.html?Expires=" + expires);
+
+			SignedRequest signedRequest = new SignedRequest();
+			signedRequest.setKeyFile(keyFile);
+			signedRequest.setKeyId(keyPairId);
+			signedRequest.setSignature("");
+			signedRequest.setExpires(new Date(expires));
+
+			SignatureValidator.validateSignature(signedRequest);
 
 			fail();
 		} catch (CFMockException e) {
 			assertTrue(e.getMessage().contains("Signature is expired"));
-		}
-	}
-
-	@Test
-	public void shouldBeAbleToSplitQuery() {
-		Map<String, String> queries = SignatureValidator.splitQuery("key1=value1&key2=value2&key3=value3");
-		assertEquals("value2", queries.get("key2"));
-	}
-
-	@Test
-	public void shouldHandleUnsupportedEncodingForQuerySplit() {
-		try {
-			Map<String, String> queries = SignatureValidator.splitQuery("key1=value1&key2=value2&key3=value3", "");
-
-			fail();
-		} catch (CFMockException e) {
-			assertTrue(e.getCause() instanceof UnsupportedEncodingException);
 		}
 	}
 
@@ -395,4 +381,34 @@ public class SignatureValidatiorTest {
 		constructor.newInstance();
 	}
 
+	public String getQueryParam(String urlString, String key) {
+		URL url;
+		try {
+			url = new URL(urlString);
+		} catch (MalformedURLException e) {
+			throw new CFMockException(e);
+		}
+
+		Map<String, String> queryParams = splitQuery(url.getQuery());
+		return queryParams.get(key);
+	}
+
+	public Map<String, String> splitQuery(final String query) {
+		return splitQuery(query, Constants.DEFAULT_ENCODING);
+	}
+
+	public Map<String, String> splitQuery(final String query, final String encoding) {
+		Map<String, String> queryPairs = new LinkedHashMap<>();
+		String[] pairs = query.split("&");
+		for (String pair : pairs) {
+			int idx = pair.indexOf('=');
+			try {
+				queryPairs.put(URLDecoder.decode(pair.substring(0, idx), encoding),
+					URLDecoder.decode(pair.substring(idx + 1), encoding));
+			} catch (UnsupportedEncodingException e) {
+				throw new CFMockException(e);
+			}
+		}
+		return queryPairs;
+	}
 }
