@@ -2,8 +2,12 @@ package com.wirelust.cfmock.web.servlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.servlet.FilterChain;
@@ -21,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.amazonaws.util.Base64;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.wirelust.cfmock.CFPolicy;
 import com.wirelust.cfmock.SignatureValidator;
 import com.wirelust.cfmock.SignedRequest;
 import com.wirelust.cfmock.exceptions.CFMockException;
@@ -94,24 +99,21 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 			return;
 		}
 
-		Appendable requestUrl = request.getRequestURL();
-		if (request.getQueryString() != null) {
-			requestUrl.append("?").append(request.getQueryString());
-		}
-
 		SignedRequest signedRequest = new SignedRequest();
+
+		String ipAddress = request.getHeader("X-FORWARDED-FOR");
+		if (ipAddress == null) {
+			ipAddress = request.getRemoteAddr();
+		}
+		signedRequest.setRemoteIpAddress(ipAddress);
 
 		String keyId = servletRequest.getParameter(SignatureValidator.PARAM_KEY_PAIR_ID);
 		if (keyId != null) {
-			LOGGER.debug("validating against keyId:{}", keyId);
-
-			signedRequest.setType(SignedRequest.Type.REQUEST);
-			signedRequest.setKeyFile(keys.get(keyId));
-			LOGGER.info("setting key id:{}, file:{}", keyId, keys.get(keyId));
+			populateSignedRequestFromUrl(signedRequest, request);
 		} else {
 			populateSignedRequestFromCookies(signedRequest, request);
 		}
-		signedRequest.setUrl(requestUrl.toString());
+		signedRequest.setUrl(getRequestUrl(request));
 
 		try {
 			if (SignatureValidator.validateSignature(signedRequest)) {
@@ -132,13 +134,35 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 		// do nothing
 	}
 
+	private void populateSignedRequestFromUrl(SignedRequest signedRequest, HttpServletRequest request) {
+
+		signedRequest.setType(SignedRequest.Type.REQUEST);
+		signedRequest.setSignature(request.getParameter(SignatureValidator.PARAM_SIGNATURE));
+		String keyId = request.getParameter(SignatureValidator.PARAM_KEY_PAIR_ID);
+		signedRequest.setKeyId(keyId);
+		signedRequest.setKeyFile(keys.get(keyId));
+
+		String policyBase64 = request.getParameter(SignatureValidator.PARAM_POLICY);
+		signedRequest.setPolicy(decodePolicy(policyBase64));
+
+		if (signedRequest.getPolicy() == null) {
+			String expiresString = request.getParameter(SignatureValidator.PARAM_EXPIRES);
+			if (expiresString != null) {
+				try {
+					signedRequest.setExpires(new Date(Long.parseLong(expiresString)*1000));
+				} catch (NumberFormatException e) {
+					throw new ServiceException("expires cookie is invalid:" + expiresString);
+				}
+			}
+		}
+	}
+
 	private void populateSignedRequestFromCookies(SignedRequest signedRequest, HttpServletRequest request) {
 		String keyId = getCookieValue(request, SignatureValidator.COOKIE_KEY_PAIR_ID);
 		signedRequest.setKeyFile(keys.get(keyId));
 		signedRequest.setType(SignedRequest.Type.COOKIE);
 		signedRequest.setKeyId(keyId);
 		signedRequest.setSignature(getCookieValue(request, SignatureValidator.COOKIE_SIGNATURE));
-		LOGGER.info("here 0");
 		populateSignedRequestPolicyFromCookies(signedRequest, request);
 
 		String expiresString = getCookieValue(request, SignatureValidator.COOKIE_EXPIRES);
@@ -157,6 +181,13 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 		if (policyBase64 == null) {
 			return;
 		}
+		signedRequest.setPolicy(decodePolicy(policyBase64));
+	}
+
+	private CFPolicy decodePolicy(String policyBase64) {
+		if (policyBase64 == null) {
+			return null;
+		}
 		LOGGER.debug("decoding base64:{}", policyBase64);
 		try {
 			String policyJson = new String(Base64.decode(policyBase64.replaceAll("_", "=")));
@@ -164,16 +195,40 @@ public class SecurityFilter extends AbstractPathAwareFilter {
 			ObjectReader objectReader = new ObjectMapper().readerFor(Policy.class);
 
 			Policy policy = objectReader.readValue(policyJson);
-			signedRequest.setPolicy(PolicyHelper.toCfPolicy(policy));
-
-			String ipAddress = request.getHeader("X-FORWARDED-FOR");
-			if (ipAddress == null) {
-				ipAddress = request.getRemoteAddr();
-			}
-			signedRequest.setRemoteIpAddress(ipAddress);
+			return PolicyHelper.toCfPolicy(policy);
 		} catch (IOException e) {
 			throw new ServiceException("unable to decode policyBase64:" + policyBase64, e);
 		}
+	}
+
+	private String getRequestUrl(final HttpServletRequest request) {
+		String requestUrl = request.getRequestURL().toString();
+
+		String queryString = request.getQueryString();
+		if (queryString == null || queryString.isEmpty()) {
+			return requestUrl;
+		}
+
+		StringBuilder filteredQueryParams = new StringBuilder();
+		String[] pairs = queryString.split("&");
+		for (String pair : pairs) {
+			int idx = pair.indexOf('=');
+			try {
+				String key = URLDecoder.decode(pair.substring(0, idx), "UTF-8");
+				if (!key.equals(SignatureValidator.PARAM_EXPIRES)
+					&& !key.equals(SignatureValidator.PARAM_SIGNATURE)
+					&& !key.equals(SignatureValidator.PARAM_KEY_PAIR_ID)
+					&& !key.equals(SignatureValidator.PARAM_POLICY)) {
+
+					filteredQueryParams.append(filteredQueryParams.length() == 0 ? "?" : "&");
+					filteredQueryParams.append(pair);
+				}
+			} catch (UnsupportedEncodingException e) {
+				throw new CFMockException(e);
+			}
+		}
+
+		return requestUrl + filteredQueryParams;
 	}
 
 	private String getCookieValue(final HttpServletRequest request, final String name) {
