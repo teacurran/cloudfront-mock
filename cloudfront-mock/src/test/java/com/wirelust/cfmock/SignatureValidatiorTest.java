@@ -64,7 +64,7 @@ public class SignatureValidatiorTest {
 
 		SignedRequest signedRequest = new SignedRequest();
 		signedRequest.setType(SignedRequest.Type.REQUEST);
-		signedRequest.setUrl(signedUrl);
+		signedRequest.setUrl(testUrl);
 		signedRequest.setExpires(expiresDate);
 		signedRequest.setKeyFile(keyFile);
 		signedRequest.setKeyId(keyPairId);
@@ -83,6 +83,9 @@ public class SignatureValidatiorTest {
 		CFPolicy policy = new CFPolicy();
 		CFPolicyStatement statement = new CFPolicyStatement();
 		statement.setDateLessThan(expiresDate);
+		statement.setResource(testUrl);
+		// policies generated with the URL custom policy sign always contain an IP mask
+		statement.setIpAddress("0.0.0.0/0");
 		policy.addStatement(statement);
 
 		assertTrue(SignatureValidator.validateSignature(testUrl, null, keyFile, keyPairId, policy, signature));
@@ -114,7 +117,7 @@ public class SignatureValidatiorTest {
 		}
 
 		signedRequest.setKeyFile(keyFile);
-		signedRequest.setUrl(signedUrl);
+		signedRequest.setUrl(testUrl);
 		signedRequest.setExpires(expiresDate);
 		signedRequest.setKeyId(keyPairId);
 		signedRequest.setSignature(signature);
@@ -135,10 +138,18 @@ public class SignatureValidatiorTest {
 			SignatureValidator.validateSignature(signedRequest);
 			Assert.fail();
 		} catch (CFMockException e) {
-			assertTrue(e.getMessage().contains("key id cannot be null"));
+			assertTrue(e.getMessage().contains("signature may not be null"));
 		}
+		signedRequest.setSignature(cfcp.getSignature().getValue());
 
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("keyId may not be null"));
+		}
 		signedRequest.setKeyId(keyPairId);
+
 		try {
 			SignatureValidator.validateSignature(signedRequest);
 			Assert.fail();
@@ -147,14 +158,6 @@ public class SignatureValidatiorTest {
 		}
 
 		signedRequest.setExpires(expiresDate);
-		try {
-			SignatureValidator.validateSignature(signedRequest);
-			Assert.fail();
-		} catch (CFMockException e) {
-			assertTrue(e.getMessage().contains("signature cannot be null"));
-		}
-
-		signedRequest.setSignature(cfcp.getSignature().getValue());
 
 		assertTrue(SignatureValidator.validateSignature(signedRequest));
 	}
@@ -173,10 +176,19 @@ public class SignatureValidatiorTest {
 			SignatureValidator.validateSignature(signedRequest);
 			Assert.fail();
 		} catch (CFMockException e) {
-			assertTrue(e.getMessage().contains("key id cannot be null"));
+			assertTrue(e.getMessage().contains("keyId may not be null"));
 		}
 
 		signedRequest.setKeyId(keyPairId);
+
+		try {
+			SignatureValidator.validateSignature(signedRequest);
+			Assert.fail();
+		} catch (CFMockException e) {
+			assertTrue(e.getMessage().contains("signature may not be null"));
+		}
+		signedRequest.setSignature(cfcp.getSignature().getValue());
+
 		try {
 			SignatureValidator.validateSignature(signedRequest);
 			Assert.fail();
@@ -190,14 +202,6 @@ public class SignatureValidatiorTest {
 		cfPolicyStatement.setResource(testUrl);
 		signedRequest.setPolicy(cfPolicy);
 
-		try {
-			SignatureValidator.validateSignature(signedRequest);
-			Assert.fail();
-		} catch (CFMockException e) {
-			assertTrue(e.getMessage().contains("signature cannot be null"));
-		}
-
-		signedRequest.setSignature(cfcp.getSignature().getValue());
 
 		// no statement
 		cfPolicy.setStatements(null);

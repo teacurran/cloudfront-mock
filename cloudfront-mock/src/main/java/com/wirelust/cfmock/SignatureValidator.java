@@ -53,6 +53,11 @@ public class SignatureValidator {
 											@NotNull final Date expires,
 											@NotNull final String signature) {
 		try {
+			Date now = new Date();
+			if (expires != null && expires.getTime() < now.getTime()) {
+				throw new CFMockException(Constants.SIGNATURE_IS_EXPIRED);
+			}
+
 			CloudFrontCookieSigner.CookiesForCannedPolicy cookiesForCannedPolicy =
 				CloudFrontCookieSigner.getCookiesForCannedPolicy(null, null, keyFile, url, keyId, expires);
 
@@ -78,7 +83,7 @@ public class SignatureValidator {
 		CFPolicyStatement statement = policy.getStatements().get(0);
 		validateStatement(statement);
 
-		if (statement.getIpAddress() != null) {
+		if (statement.getIpAddress() != null && remoteIp != null) {
 			SubnetUtils subnetUtils = new SubnetUtils(statement.getIpAddress());
 			if (!subnetUtils.getInfo().isInRange(remoteIp)) {
 				return false;
@@ -92,7 +97,8 @@ public class SignatureValidator {
 
 		CloudFrontCookieSigner.CookiesForCustomPolicy cookiesForCustomPolicy =
 			CloudFrontCookieSigner.getCookiesForCustomPolicy(null, null, keyFile,
-				statement.getResource(), keyId, statement.getDateLessThan(), statement.getDateGreaterThan(), null);
+				statement.getResource(), keyId, statement.getDateLessThan(), statement.getDateGreaterThan(),
+				statement.getIpAddress());
 
 			return signature.equals(cookiesForCustomPolicy.getSignature().getValue());
 		} catch (InvalidKeySpecException | IOException e) {
@@ -127,7 +133,7 @@ public class SignatureValidator {
 			throw new CFMockException("Error validating signed request. errors: " + buildValidationError(violations));
 		}
 		if (signedRequest.getExpires() == null && signedRequest.getPolicy() == null) {
-			throw new CFMockException("either expires or policy");
+			throw new CFMockException("either expires or policy must be set");
 		}
 	}
 
