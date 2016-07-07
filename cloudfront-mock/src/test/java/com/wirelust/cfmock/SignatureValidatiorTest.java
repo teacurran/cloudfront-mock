@@ -312,7 +312,7 @@ public class SignatureValidatiorTest {
 	public void shouldBeAbleToMatchIPAddress() throws Exception {
 
 		CloudFrontCookieSigner.CookiesForCustomPolicy cfcp = CloudFrontCookieSigner.getCookiesForCustomPolicy(null,
-			null, keyFile, null, keyPairId, expiresDate, null, null);
+			null, keyFile, null, keyPairId, expiresDate, null, "192.0.2.0/24");
 
 
 		CFPolicy cfPolicy = new CFPolicy();
