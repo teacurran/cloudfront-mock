@@ -6,8 +6,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.servlet.FilterChain;
