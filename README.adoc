@@ -19,19 +19,19 @@ Mock server for AWS Cloudfront signed url testing or for local hosting
 
 |Signed URL
 |Custom Policy - Wildcard resource
-|TODO
+|Done
 
 |Signed URL
-|Custom Policy - Begin TIme
-|TODO
+|Custom Policy - Begin Time
+|Done
 
 |Signed URL
 |Custom Policy - IP restriction
-|TODO
+|Done
 
 |Signed URL
 |Custom Policy - Base64 Encoding
-|TODO
+|Done
 
 |Signed Cookie
 |with canned policy
