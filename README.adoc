@@ -55,3 +55,34 @@ Mock server for AWS Cloudfront signed url testing or for local hosting
 
 |===
 
+
+## Running
+
+To build, from the root directory run:
+
+    mvn clean package
+
+Once built you can deploy cloudfront-mock-web-1.0-SNAPSHOT.war to your app server.
+This has been tested with Wildfly 10.x but should work on any Web Profile app server.
+
+There is a sample configuration file called sample-config.properties
+
+	root=/path/to/your/root/directory
+	keys=key1,key2
+	key.key1.location=/path/to/key1.pem
+	key.key2.location=/path/to/key2.pem
+
+*root*: the directory where your assets you want to serve are located +
+*keys*: a list of pem keys you wish to give access to the root content. At lease 1 key is required. +
+*key.key1.location*: an example of how to set the file path of where the application can find key1.
+
+To run Wildfly with this config file simply pass in the following environment variable:
+
+	./standalone.sh -Dapp.cfmock.env=/path/to/sample-config.properties
+
+once deployed you should be able to use signed URLs against the context root of the applicaiton:
+
+	http://127.0.0.1:8080/cloudfront-mock-web-1.0-SNAPSHOT/path/to/resource.html?Expires=13570344005&Signature=nitfHRCrtziwO2HwPfWw~yYDhUF5EwRunQA-j19DzZrvDh6hQ73lDx~-ar3UocvvRQVw6EkC~GdpGQyyOSKQim-TxAnW7d8F5Kkai9HVx0FIu-5jcQb0UEmatEXAMPLE3ReXySpLSMj0yCd3ZAB4UcBCAqEijkytL6f3fVYNGQI66&Key-Pair-Id=APKA9ONS7QCOWEXAMPLE
+
+Requests can be made according to the CloudFron URL signing documentation available here:
+http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html
